@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import type { ActivityType, PreloadedTopic } from '../types'
 import { ACTIVITY_TYPES_META, timeStringToHours } from '../constants/initialData'
 import { IconRenderer } from './IconRenderer'
-import { Plus, Check, Clock, Sparkles } from 'lucide-react'
+import { Plus, Check, Sparkles } from 'lucide-react'
 
 interface TimeEntryFormProps {
   topics: PreloadedTopic[]
@@ -133,19 +133,11 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
   return (
     <div className="rounded-3xl bg-white/25 backdrop-blur-xl border border-white/40 shadow-xl p-5">
       {/* En-tête formulaire avec récapitulatif du flow */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Sparkles size={15} className="text-[#181818]" />
-          <h3 className="font-mono-tech text-xs tracking-wider uppercase font-bold text-zinc-900/80">
-            AJOUTER UNE ACTIVITÉ
-          </h3>
-        </div>
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/10 text-[11px] font-mono-tech font-bold text-[#181818]">
-          <Clock size={11} />
-          <span>
-            {startTime} → {endTime} ({durationStr})
-          </span>
-        </div>
+      <div className="flex items-center gap-2 mb-4">
+        <Sparkles size={15} className="text-[#181818]" />
+        <h3 className="font-mono-tech text-xs tracking-wider uppercase font-bold text-zinc-900/80">
+          AJOUTER UNE ACTIVITÉ
+        </h3>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
