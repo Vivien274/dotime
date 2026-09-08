@@ -1,20 +1,33 @@
-import React from 'react'
-import type { TimeEntry, DaySummaryStats } from '../types'
+import React, { useState } from 'react'
+import type { TimeEntry, DaySummaryStats, ActivityType } from '../types'
 import { ACTIVITY_TYPES_META } from '../constants/initialData'
 import { ModernTimeDonut } from './ModernTimeDonut'
-import { Clock, Trash2, CalendarCheck } from 'lucide-react'
+import { EditActivityModal } from './EditActivityModal'
+import { Clock, Trash2, CalendarCheck, Edit3 } from 'lucide-react'
 
 interface DayEntriesListProps {
   entries: TimeEntry[]
   onDeleteEntry: (id: string) => void
+  onUpdateEntry?: (
+    id: string,
+    updated: {
+      title: string
+      type: ActivityType
+      startTime: string
+      endTime: string
+    }
+  ) => Promise<void> | void
   stats: DaySummaryStats
 }
 
 export const DayEntriesList: React.FC<DayEntriesListProps> = ({
   entries,
   onDeleteEntry,
+  onUpdateEntry,
   stats,
 }) => {
+  const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
+
   return (
     <div className="space-y-4">
       {/* Liste des créneaux chronologiques */}
@@ -48,10 +61,14 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
               return (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between p-3.5 rounded-2xl bg-white/40 hover:bg-white/60 border border-black/5 shadow-sm transition-all"
+                  className="group flex items-center justify-between p-3.5 rounded-2xl bg-white/40 hover:bg-white/65 border border-black/5 shadow-sm transition-all"
                 >
-                  {/* Badge type à largeur fixe et titre */}
-                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                  {/* Badge type à largeur fixe et titre (cliquable pour éditer) */}
+                  <div
+                    onClick={() => onUpdateEntry && setEditingEntry(entry)}
+                    className="flex items-center gap-3 min-w-0 pr-2 flex-1 cursor-pointer"
+                    title="Cliquer pour modifier cette activité"
+                  >
                     <span
                       className={`w-[3.75rem] text-center shrink-0 py-1 rounded-xl text-[10px] font-mono-tech font-bold uppercase tracking-wider shadow-sm ${typeMeta.bgClass} ${typeMeta.textClass}`}
                     >
@@ -59,7 +76,7 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
                     </span>
 
                     <div className="min-w-0">
-                      <h4 className="font-bold text-sm text-[#181818] truncate">
+                      <h4 className="font-bold text-sm text-[#181818] truncate group-hover:text-black">
                         {entry.title}
                       </h4>
                       <div className="flex items-center gap-2 text-[11px] font-mono-tech text-zinc-700">
@@ -73,11 +90,20 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
                     </div>
                   </div>
 
-                  {/* Actions et suppression */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-dot text-xs px-2.5 py-1 rounded-full bg-black/10 text-[#181818] font-bold">
+                  {/* Actions : éditer & supprimer */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="font-dot text-xs px-2.5 py-1 rounded-full bg-black/10 text-[#181818] font-bold mr-1">
                       {durationLabel}
                     </span>
+                    {onUpdateEntry && (
+                      <button
+                        onClick={() => setEditingEntry(entry)}
+                        title="Modifier cette activité"
+                        className="p-1.5 rounded-full hover:bg-black/10 text-zinc-600 hover:text-black transition-colors"
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                    )}
                     <button
                       onClick={() => onDeleteEntry(entry.id)}
                       title="Supprimer cette activité"
@@ -95,6 +121,16 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
 
       {/* Camembert / Donut ultra-moderne Nothing OS pour la RÉPARTITION DU TEMPS */}
       <ModernTimeDonut stats={stats} entries={entries} />
+
+      {/* Modal d'édition d'activité */}
+      {onUpdateEntry && (
+        <EditActivityModal
+          entry={editingEntry}
+          isOpen={editingEntry !== null}
+          onClose={() => setEditingEntry(null)}
+          onUpdate={onUpdateEntry}
+        />
+      )}
     </div>
   )
 }

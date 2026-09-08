@@ -68,6 +68,52 @@ export const add = mutation({
 });
 
 /**
+ * Récupère les entrées pour une liste de dates (ex: semaine de 7 jours)
+ */
+export const getByDateList = query({
+  args: { dates: v.array(v.string()) },
+  handler: async (ctx, args) => {
+    const results: Record<string, any[]> = {};
+    for (const d of args.dates) {
+      const dayEntries = await ctx.db
+        .query("entries")
+        .withIndex("by_date", (q) => q.eq("date", d))
+        .collect();
+      results[d] = dayEntries.sort((a, b) => a.startHour - b.startHour);
+    }
+    return results;
+  },
+});
+
+/**
+ * Met à jour une activité existante
+ */
+export const update = mutation({
+  args: {
+    id: v.id("entries"),
+    title: v.string(),
+    type: v.union(v.literal("pro"), v.literal("perso"), v.literal("entreprises")),
+    startTime: v.string(),
+    endTime: v.string(),
+    startHour: v.number(),
+    endHour: v.number(),
+    durationHours: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...data } = args;
+    await ctx.db.patch(id, {
+      title: data.title.trim(),
+      type: data.type,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      startHour: data.startHour,
+      endHour: data.endHour,
+      durationHours: data.durationHours,
+    });
+  },
+});
+
+/**
  * Supprime une activité par son ID
  */
 export const remove = mutation({

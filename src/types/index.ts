@@ -36,3 +36,12 @@ export type DaySummaryStats = {
     color: string
   }[]
 }
+
+export type HourSlot = {
+  hour: number // 0 à 23
+  label: string // "08:00"
+  isFilled: boolean
+  isNight: boolean // Activité de nuit / sommeil
+  matchingEntry: TimeEntry | null
+  isCurrentHour: boolean
+}

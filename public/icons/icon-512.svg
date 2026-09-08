@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFA43B" />
+      <stop offset="50%" stop-color="#FF9028" />
+      <stop offset="100%" stop-color="#FF8412" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Fond carré à coins arrondis Nothing OS -->
+  <rect width="512" height="512" rx="128" fill="url(#bg)" />
+
+  <!-- Anneau central en verre / fond sombre -->
+  <circle cx="256" cy="256" r="170" fill="#181818" filter="url(#shadow)" />
+  <circle cx="256" cy="256" r="162" fill="none" stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="4" />
+
+  <!-- Grille circulaire de 24 points (1 par heure) -->
+  <!-- Rayon de l'anneau de points = 120 -->
+  <g fill="#FFFFFF" opacity="0.35">
+    <!-- 24 points sur le cercle -->
+    <circle cx="256" cy="136" r="7" />
+    <circle cx="287" cy="140" r="7" />
+    <circle cx="316" cy="152" r="7" />
+    <circle cx="341" cy="171" r="7" />
+    <circle cx="360" cy="196" r="7" />
+    <circle cx="372" cy="225" r="7" />
+    <circle cx="376" cy="256" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="372" cy="287" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="360" cy="316" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="341" cy="341" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="316" cy="360" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="287" cy="372" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="256" cy="376" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="225" cy="372" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="196" cy="360" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="171" cy="341" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="152" cy="316" r="7" fill="#FFA43B" opacity="1" />
+    <circle cx="140" cy="287" r="7" />
+    <circle cx="136" cy="256" r="7" />
+    <circle cx="140" cy="225" r="7" />
+    <circle cx="152" cy="196" r="7" />
+    <circle cx="171" cy="171" r="7" />
+    <circle cx="196" cy="152" r="7" />
+    <circle cx="225" cy="140" r="7" />
+  </g>
+
+  <!-- Point central signature vibrant -->
+  <circle cx="256" cy="256" r="48" fill="#FFA43B" />
+  <circle cx="256" cy="256" r="28" fill="#181818" />
+  <circle cx="256" cy="256" r="14" fill="#FFFFFF" />
+</svg>

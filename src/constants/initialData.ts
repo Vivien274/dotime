@@ -214,6 +214,26 @@ export const getOffsetDateKey = (dateKey: string, offsetDays: number): string =>
   return getFormattedDateKey(d)
 }
 
+/**
+ * Retourne les 7 dates de la semaine (du lundi au dimanche) contenant la date donnée
+ */
+export const getWeekDaysForDate = (dateKey: string): string[] => {
+  const d = new Date(dateKey + 'T12:00:00')
+  const dayOfWeek = d.getDay()
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+
+  const monday = new Date(d)
+  monday.setDate(d.getDate() + diffToMonday)
+
+  const week: string[] = []
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(monday)
+    day.setDate(monday.getDate() + i)
+    week.push(getFormattedDateKey(day))
+  }
+  return week
+}
+
 export const generateInitialEntries = (): Record<string, TimeEntry[]> => {
   const today = getFormattedDateKey()
   const entries: Record<string, TimeEntry[]> = {}

@@ -46,6 +46,7 @@ export function useTimeTracker() {
 
   // 3. Mutations Convex
   const addEntryMutation = useMutation(api.entries.add)
+  const updateEntryMutation = useMutation(api.entries.update)
   const removeEntryMutation = useMutation(api.entries.remove)
   const resetDayMutation = useMutation(api.entries.resetDay)
   const importBatchMutation = useMutation(api.entries.importBatch)
@@ -259,6 +260,35 @@ export function useTimeTracker() {
     [addEntryMutation, selectedDate]
   )
 
+  // Modifier une entrée existante en base de données Convex
+  const updateEntry = useCallback(
+    async (
+      id: string,
+      updated: {
+        title: string
+        type: ActivityType
+        startTime: string
+        endTime: string
+      }
+    ) => {
+      const startH = timeStringToHours(updated.startTime)
+      const endH = timeStringToHours(updated.endTime)
+      const duration = calculateDurationHours(updated.startTime, updated.endTime)
+
+      await updateEntryMutation({
+        id: id as Id<'entries'>,
+        title: updated.title.trim(),
+        type: updated.type,
+        startTime: updated.startTime,
+        endTime: updated.endTime,
+        startHour: startH,
+        endHour: endH,
+        durationHours: duration,
+      })
+    },
+    [updateEntryMutation]
+  )
+
   // Supprimer une entrée en base de données Convex
   const deleteEntry = useCallback(
     async (id: string) => {
@@ -349,6 +379,7 @@ export function useTimeTracker() {
     suggestedStartTime,
     suggestedEndTime,
     addEntry,
+    updateEntry,
     deleteEntry,
     resetDay,
     addTopic,

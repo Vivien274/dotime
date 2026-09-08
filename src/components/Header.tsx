@@ -1,5 +1,5 @@
 import React from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Monitor } from 'lucide-react'
 import { getFormattedDateKey } from '../constants/initialData'
 
 interface HeaderProps {
@@ -7,12 +7,14 @@ interface HeaderProps {
   onDateChange: (dateStr: string) => void
   totalHours: number
   onResetDay?: () => void
+  onOpenStandby?: () => void
 }
 
 export const Header: React.FC<HeaderProps> = ({
   selectedDate,
   onDateChange,
   totalHours,
+  onOpenStandby,
 }) => {
   // Parser la date sélectionnée
   const dateObj = new Date(selectedDate + 'T12:00:00')
@@ -49,6 +51,16 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="font-dot text-[11px] tracking-wider text-[#181818]">TIMDOT (24H)</span>
         </div>
         <div className="flex items-center gap-1.5">
+          {onOpenStandby && (
+            <button
+              onClick={onOpenStandby}
+              title="Passer en mode veille plein écran"
+              className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/25 hover:bg-[#181818] hover:text-white border border-black/10 text-[10px] transition-all cursor-pointer"
+            >
+              <Monitor size={10} />
+              <span>STANDBY</span>
+            </button>
+          )}
           {!isToday && (
             <button
               onClick={handleToday}
