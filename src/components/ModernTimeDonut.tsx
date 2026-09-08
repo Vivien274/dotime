@@ -265,25 +265,30 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats, entries
             )
           })}
 
-          {/* Footer : info sommeil (si applicable) + reste à compléter */}
-          <div className="flex items-center justify-between px-2 pt-1 text-[10px] font-mono-tech text-zinc-700">
-            {!isWorkRange && stats.sleepHours > 0 ? (
-              <span className="flex items-center gap-1 font-semibold text-zinc-800">
-                <Moon size={11} className="text-zinc-600" />
-                <span>Sommeil : {stats.sleepHours}h</span>
-                <span className="text-zinc-500 font-normal text-[9px]">(exclu)</span>
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 text-zinc-600">
-                {isWorkRange ? <Briefcase size={10} /> : <Clock size={10} />}
-                <span className="uppercase tracking-wider">
-                  {isWorkRange ? 'Plage 9h - 18h' : 'Cycle 24h'}
+          {/* Footer : info sommeil (si applicable) + reste à compléter sur deux lignes distinctes */}
+          <div className="pt-2 border-t border-black/10 space-y-1.5 text-[10px] font-mono-tech text-zinc-700">
+            {!isWorkRange && stats.sleepHours > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-semibold text-zinc-800">
+                  <Moon size={11} className="text-zinc-600 shrink-0" />
+                  <span>Sommeil</span>
+                  <span className="text-zinc-500 font-normal text-[9px]">(exclu)</span>
                 </span>
-              </span>
+                <span className="font-bold text-[#181818] font-dot text-xs">
+                  {stats.sleepHours}h
+                </span>
+              </div>
             )}
-            <span className="font-bold text-[#181818] font-dot">
-              {remainingHours}h restant / {windowHours}h
-            </span>
+
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-zinc-600 uppercase tracking-wider text-[9px]">
+                {isWorkRange ? <Briefcase size={10} className="shrink-0" /> : <Clock size={10} className="shrink-0" />}
+                <span>{isWorkRange ? 'Reste 9h - 18h' : 'Temps restant'}</span>
+              </span>
+              <span className="font-bold text-[#181818] font-dot text-xs">
+                {remainingHours}h / {windowHours}h
+              </span>
+            </div>
           </div>
         </div>
       </div>
