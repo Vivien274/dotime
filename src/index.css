@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-dot: "Silkscreen", monospace;
+  --font-dot: "Doto", monospace;
   --font-mono: "Space Mono", monospace;
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
@@ -33,7 +33,8 @@
 
 /* Polices personnalisées directes */
 .font-dot {
-  font-family: var(--font-dot), "Silkscreen", monospace;
+  font-family: "Doto", var(--font-dot), monospace;
+  font-variation-settings: "ROND" 100;
 }
 
 .font-mono-tech {

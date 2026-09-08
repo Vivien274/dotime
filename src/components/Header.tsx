@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span>{monthName} {year}</span>
           </div>
           <div className="flex items-end gap-2.5 mt-1">
-            <h1 className="font-dot text-7xl sm:text-8xl font-bold tracking-tight text-[#181818] select-none leading-none translate-y-3">
+            <h1 className="font-dot text-7xl sm:text-8xl font-bold tracking-tight text-[#181818] select-none leading-none">
               {dayNumber}
             </h1>
             <div className="font-mono-tech text-xs tracking-widest uppercase text-zinc-900/70 pb-0.5 flex flex-col justify-end">
