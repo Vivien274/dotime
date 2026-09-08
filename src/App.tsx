@@ -20,7 +20,6 @@ export function App() {
     suggestedEndTime,
     addEntry,
     deleteEntry,
-    resetDay,
     addTopic,
     daySummaryStats,
   } = useTimeTracker()
@@ -60,11 +59,6 @@ export function App() {
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
           totalHours={daySummaryStats.totalHours}
-          onResetDay={() => {
-            if (confirm('Effacer toutes les activités de cette journée ?')) {
-              resetDay(selectedDate)
-            }
-          }}
         />
 
         {/* 1. Grille de 24 points purs représentant les 24 heures de la journée */}

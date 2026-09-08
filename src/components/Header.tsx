@@ -1,5 +1,5 @@
 import React from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, RotateCcw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
 import { getFormattedDateKey } from '../constants/initialData'
 
 interface HeaderProps {
@@ -13,7 +13,6 @@ export const Header: React.FC<HeaderProps> = ({
   selectedDate,
   onDateChange,
   totalHours,
-  onResetDay,
 }) => {
   // Parser la date sélectionnée
   const dateObj = new Date(selectedDate + 'T12:00:00')
@@ -64,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Date Header avec Grand numéro Dot-Matrix */}
+      {/* Date Header avec Grand numéro Dot-Matrix agrandi et aligné en bas avec l'horaire */}
       <div className="flex items-end justify-between border-b border-black/10 pb-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-mono-tech font-bold tracking-widest text-zinc-900/70 uppercase">
@@ -72,30 +71,21 @@ export const Header: React.FC<HeaderProps> = ({
             <span>·</span>
             <span>{monthName} {year}</span>
           </div>
-          <div className="flex items-baseline gap-2 mt-1">
-            <h1 className="font-dot text-6xl md:text-7xl font-bold tracking-tight text-[#181818] select-none leading-none">
+          <div className="flex items-end gap-2.5 mt-1">
+            <h1 className="font-dot text-7xl sm:text-8xl font-bold tracking-tight text-[#181818] select-none leading-none">
               {dayNumber}
             </h1>
-            <div className="font-mono-tech text-xs tracking-widest uppercase text-zinc-900/70 pb-1">
-              <span>DAY CYCLE</span>
-              <div className="font-dot text-sm text-[#181818]">{totalHours}H / 24H</div>
+            <div className="font-mono-tech text-xs tracking-widest uppercase text-zinc-900/70 pb-0.5 flex flex-col justify-end">
+              <span className="text-[10px] text-zinc-900/70 font-bold leading-tight">DAY CYCLE</span>
+              <div className="font-dot text-sm text-[#181818] font-bold leading-none mt-1">
+                {totalHours}H / 24H
+              </div>
             </div>
           </div>
         </div>
 
-
         {/* Boutons de navigation temporelle */}
-        <div className="flex items-center gap-1.5">
-          {onResetDay && totalHours > 0 && (
-
-            <button
-              onClick={onResetDay}
-              title="Réinitialiser la journée"
-              className="p-2 rounded-full bg-white/20 hover:bg-white/40 border border-black/10 text-[#181818] transition-colors"
-            >
-              <RotateCcw size={15} />
-            </button>
-          )}
+        <div className="flex items-center">
           <div className="flex items-center bg-white/25 backdrop-blur-md rounded-full p-1 border border-black/10 shadow-sm">
             <button
               onClick={handlePrevDay}
