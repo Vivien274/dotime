@@ -1,25 +1,96 @@
-import React, { useState } from 'react'
-import type { DaySummaryStats, ActivityType } from '../types'
-import { PieChart, Clock } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import type { DaySummaryStats, ActivityType, TimeEntry } from '../types'
+import {
+  ACTIVITY_TYPES_META,
+  calculateEntryOverlapMinutes,
+  isNightActivity,
+} from '../constants/initialData'
+import { PieChart, Clock, Moon, Briefcase } from 'lucide-react'
 
 interface ModernTimeDonutProps {
   stats: DaySummaryStats
+  entries?: TimeEntry[]
 }
 
-export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats }) => {
+type TimeRangeFilter = 'all' | 'work'
+
+export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats, entries = [] }) => {
+  const [timeRange, setTimeRange] = useState<TimeRangeFilter>('all')
   const [hoveredType, setHoveredType] = useState<ActivityType | null>(null)
 
   const radius = 54
   const strokeWidth = 14
   const circumference = 2 * Math.PI * radius
 
-  // Filtrer les éléments ayant du temps loggé
-  const activeItems = stats.byType.filter((item) => item.hours > 0)
+  // Calcul spécifique pour la plage de travail 9h - 18h (9 heures au total)
+  const workStats = useMemo(() => {
+    const byTypeMins: Record<ActivityType, number> = {
+      pro: 0,
+      perso: 0,
+      entreprises: 0,
+    }
+    let activeMinutes = 0
+
+    entries.forEach((entry) => {
+      // Exclure le sommeil de la répartition
+      if (isNightActivity(entry.title)) return
+
+      const overlapMins = calculateEntryOverlapMinutes(entry.startTime, entry.endTime, 9, 18)
+      if (overlapMins > 0) {
+        activeMinutes += overlapMins
+        if (byTypeMins[entry.type] !== undefined) {
+          byTypeMins[entry.type] += overlapMins
+        }
+      }
+    })
+
+    const byType = (['pro', 'perso', 'entreprises'] as ActivityType[]).map((t) => {
+      const meta = ACTIVITY_TYPES_META[t]
+      const mins = byTypeMins[t]
+      return {
+        type: t,
+        label: meta.label,
+        shortLabel: meta.shortLabel,
+        hours: Number((mins / 60).toFixed(1)),
+        percentage: activeMinutes > 0 ? Math.round((mins / activeMinutes) * 100) : 0,
+        color: meta.color,
+      }
+    })
+
+    const activeHours = Number((activeMinutes / 60).toFixed(1))
+    const windowHours = 9
+    const remainingHours = Number(Math.max(0, windowHours - activeHours).toFixed(1))
+    const percentOfWindow = Math.min(100, Math.round((activeHours / windowHours) * 100))
+
+    return {
+      activeHours,
+      activeMinutes,
+      byType,
+      windowHours,
+      remainingHours,
+      percentOfWindow,
+    }
+  }, [entries])
+
+  // Données actives selon la plage horaire sélectionnée
+  const isWorkRange = timeRange === 'work'
+  const currentByType = isWorkRange ? workStats.byType : stats.byType
+  const currentActiveHours = isWorkRange ? workStats.activeHours : stats.activeHours
+  const windowHours = isWorkRange ? 9 : 24
+  const remainingHours = isWorkRange
+    ? workStats.remainingHours
+    : Number(Math.max(0, 24 - stats.totalHours).toFixed(1))
+  const completionPercent = isWorkRange
+    ? workStats.percentOfWindow
+    : Math.min(100, Math.round((stats.totalHours / 24) * 100))
+
+  // Préparation des segments d'arc pour le SVG Donut
+  const activeItems = currentByType.filter((item) => item.hours > 0)
   const hasMultipleActive = activeItems.length > 1
   const gap = hasMultipleActive ? 4 : 0
 
   let accumulatedLength = 0
-  const segments = stats.byType.map((item) => {
+  const segments = currentByType.map((item) => {
     const segmentLength = (item.percentage / 100) * circumference
     const dashLength = item.percentage > 0 ? Math.max(0, segmentLength - gap) : 0
     const offset = -accumulatedLength
@@ -35,22 +106,41 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats }) => {
     }
   })
 
-  const dayCompletionPercent = Math.min(100, Math.round((stats.totalHours / 24) * 100))
-  const remainingHours = Number(Math.max(0, 24 - stats.totalHours).toFixed(1))
-
   return (
     <div className="rounded-3xl bg-white/25 backdrop-blur-xl border border-white/40 shadow-xl p-5">
-      {/* En-tête */}
-      <div className="flex items-center justify-between mb-4">
+      {/* En-tête avec titre & sélecteur de plage "Toute la journée" / "9h - 18h" */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div className="flex items-center gap-2">
           <PieChart size={15} className="text-[#181818]" />
           <h3 className="font-mono-tech text-xs tracking-wider uppercase font-bold text-zinc-900/80">
             RÉPARTITION DU TEMPS
           </h3>
         </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/10 text-[11px] font-mono-tech font-bold text-[#181818]">
-          <Clock size={11} />
-          <span>{stats.totalHours}H / 24H</span>
+
+        {/* Boutons de bascule de plage Nothing OS */}
+        <div className="flex items-center p-0.5 rounded-full bg-black/10 border border-black/5">
+          <button
+            type="button"
+            onClick={() => setTimeRange('all')}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-mono-tech font-bold transition-all duration-200 ${
+              timeRange === 'all'
+                ? 'bg-[#181818] text-white shadow-xs'
+                : 'text-zinc-700 hover:text-zinc-950'
+            }`}
+          >
+            Toute la journée
+          </button>
+          <button
+            type="button"
+            onClick={() => setTimeRange('work')}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-mono-tech font-bold transition-all duration-200 ${
+              timeRange === 'work'
+                ? 'bg-[#181818] text-white shadow-xs'
+                : 'text-zinc-700 hover:text-zinc-950'
+            }`}
+          >
+            9h - 18h
+          </button>
         </div>
       </div>
 
@@ -64,7 +154,7 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats }) => {
             viewBox="0 0 148 148"
             className="transform -rotate-90 drop-shadow-sm transition-transform"
           >
-            {/* Piste de fond / Anneau 24H discret */}
+            {/* Piste de fond / Anneau discret */}
             <circle
               cx="74"
               cy="74"
@@ -74,8 +164,8 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats }) => {
               strokeWidth={strokeWidth}
             />
 
-            {/* Segments du Donut proportionnels */}
-            {stats.totalHours > 0 ? (
+            {/* Segments du Donut proportionnels (excluant le sommeil) */}
+            {currentActiveHours > 0 ? (
               segments.map((seg) => {
                 if (seg.percentage <= 0) return null
 
@@ -98,7 +188,7 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats }) => {
                 )
               })
             ) : (
-              // Anneau d'attente quand rien n'est encore saisi
+              // Anneau d'attente quand rien n'est saisi sur cette plage
               <circle
                 cx="74"
                 cy="74"
@@ -111,20 +201,20 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats }) => {
             )}
           </svg>
 
-          {/* Centre du Donut : Total d'heures et progression */}
+          {/* Centre du Donut : Heures actives et taux de remplissage */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
             <span className="font-dot text-2xl font-bold text-[#181818] leading-none">
-              {stats.totalHours}H
+              {currentActiveHours}H
             </span>
             <span className="font-mono-tech text-[9px] tracking-widest text-zinc-700 uppercase font-bold mt-0.5">
-              {dayCompletionPercent}% JOUR
+              {isWorkRange ? `${completionPercent}% 9H-18H` : `${completionPercent}% JOUR`}
             </span>
           </div>
         </div>
 
         {/* Colonne des 3 catégories avec barres ultra-précises et largeur fixe */}
         <div className="flex-1 w-full space-y-2.5">
-          {stats.byType.map((item) => {
+          {currentByType.map((item) => {
             const isHovered = hoveredType === item.type
 
             return (
@@ -175,10 +265,25 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats }) => {
             )
           })}
 
-          {/* Reste à compléter dans le cycle de 24H */}
+          {/* Footer : info sommeil (si applicable) + reste à compléter */}
           <div className="flex items-center justify-between px-2 pt-1 text-[10px] font-mono-tech text-zinc-700">
-            <span className="uppercase tracking-wider">Temps restant</span>
-            <span className="font-bold text-[#181818] font-dot">{remainingHours}h / 24h</span>
+            {!isWorkRange && stats.sleepHours > 0 ? (
+              <span className="flex items-center gap-1 font-semibold text-zinc-800">
+                <Moon size={11} className="text-zinc-600" />
+                <span>Sommeil : {stats.sleepHours}h</span>
+                <span className="text-zinc-500 font-normal text-[9px]">(exclu)</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-zinc-600">
+                {isWorkRange ? <Briefcase size={10} /> : <Clock size={10} />}
+                <span className="uppercase tracking-wider">
+                  {isWorkRange ? 'Plage 9h - 18h' : 'Cycle 24h'}
+                </span>
+              </span>
+            )}
+            <span className="font-bold text-[#181818] font-dot">
+              {remainingHours}h restant / {windowHours}h
+            </span>
           </div>
         </div>
       </div>

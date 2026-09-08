@@ -21,15 +21,18 @@ export type TimeEntry = {
 
 export type DaySummaryStats = {
   totalHours: number
+  activeHours: number // Hors sommeil
+  sleepHours: number // Sommeil
   totalMinutes: number
+  activeMinutes: number
   entriesCount: number
   completedHoursCount: number // 0 à 24
   byType: {
     type: ActivityType
     label: string
     shortLabel: string
-    hours: number
-    percentage: number
+    hours: number // Heures actives (hors sommeil)
+    percentage: number // % du temps actif
     color: string
   }[]
 }

@@ -106,6 +106,41 @@ export const calculateDurationHours = (startTime: string, endTime: string): numb
 }
 
 /**
+ * Calcule le nombre de minutes de chevauchement entre une activité et une plage horaire donnée (ex: 9h - 18h)
+ */
+export const calculateEntryOverlapMinutes = (
+  startTime: string,
+  endTime: string,
+  windowStartHour: number,
+  windowEndHour: number
+): number => {
+  if (!startTime || !endTime) return 0
+  const [startH, startM] = startTime.split(':').map(Number)
+  const [endH, endM] = endTime.split(':').map(Number)
+
+  const startMin = (startH || 0) * 60 + (startM || 0)
+  let endMin = (endH || 0) * 60 + (endM || 0)
+
+  if (endTime === '00:00' && startTime !== '00:00') {
+    endMin = 24 * 60
+  }
+
+  const winStart = windowStartHour * 60
+  const winEnd = windowEndHour * 60
+
+  if (endMin < startMin) {
+    // Traversée de minuit (ex: 23:00 -> 07:00)
+    // Portion 1 : fin de journée d'hier (startMin -> 24h)
+    const p1 = Math.max(0, Math.min(24 * 60, winEnd) - Math.max(startMin, winStart))
+    // Portion 2 : matinée d'aujourd'hui (00h -> endMin)
+    const p2 = Math.max(0, Math.min(endMin, winEnd) - Math.max(0, winStart))
+    return p1 + p2
+  } else {
+    return Math.max(0, Math.min(endMin, winEnd) - Math.max(startMin, winStart))
+  }
+}
+
+/**
  * Détermine avec précision si l'heure h (0 à 23) est couverte par une activité
  * (Gère les chevauchements partiels, les fins de journée à 00:00 et les nuits traversant minuit)
  */

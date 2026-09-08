@@ -290,6 +290,8 @@ export function useTimeTracker() {
   // Statistiques de la journée
   const daySummaryStats = useMemo<DaySummaryStats>(() => {
     let totalMinutes = 0
+    let activeMinutes = 0
+    let sleepMinutes = 0
     const byTypeMins: Record<ActivityType, number> = {
       pro: 0,
       perso: 0,
@@ -300,8 +302,14 @@ export function useTimeTracker() {
       const duration = calculateDurationHours(entry.startTime, entry.endTime)
       const mins = Math.round(duration * 60)
       totalMinutes += mins
-      if (byTypeMins[entry.type] !== undefined) {
-        byTypeMins[entry.type] += mins
+
+      if (isNightActivity(entry.title)) {
+        sleepMinutes += mins
+      } else {
+        activeMinutes += mins
+        if (byTypeMins[entry.type] !== undefined) {
+          byTypeMins[entry.type] += mins
+        }
       }
     })
 
@@ -315,14 +323,17 @@ export function useTimeTracker() {
         label: meta.label,
         shortLabel: meta.shortLabel,
         hours: Number((mins / 60).toFixed(1)),
-        percentage: totalMinutes > 0 ? Math.round((mins / totalMinutes) * 100) : 0,
+        percentage: activeMinutes > 0 ? Math.round((mins / activeMinutes) * 100) : 0,
         color: meta.color,
       }
     })
 
     return {
       totalHours: Number((totalMinutes / 60).toFixed(1)),
+      activeHours: Number((activeMinutes / 60).toFixed(1)),
+      sleepHours: Number((sleepMinutes / 60).toFixed(1)),
       totalMinutes,
+      activeMinutes,
       entriesCount: currentDayEntries.length,
       completedHoursCount: completedHours,
       byType,

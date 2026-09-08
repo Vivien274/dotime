@@ -94,7 +94,7 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
       </div>
 
       {/* Camembert / Donut ultra-moderne Nothing OS pour la RÉPARTITION DU TEMPS */}
-      <ModernTimeDonut stats={stats} />
+      <ModernTimeDonut stats={stats} entries={entries} />
     </div>
   )
 }
