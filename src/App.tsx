@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTimeTracker } from './hooks/useTimeTracker'
+import { usePomodoro } from './hooks/usePomodoro'
 import { Header } from './components/Header'
 import { Day24Matrix } from './components/Day24Matrix'
 import { TimeEntryForm } from './components/TimeEntryForm'
@@ -52,6 +53,13 @@ export function App() {
       colors: ['#181818', '#FFA43B', '#FFFFFF'],
     })
   }
+
+  // Hook unifié du Pomodoro partagé entre la vue Pomodoro et le mode Standby
+  const pomodoro = usePomodoro((entry) => {
+    handleAddEntry(entry)
+    setNavTab('tracker')
+    setCurrentView('day')
+  })
 
   return (
     <div
@@ -145,12 +153,7 @@ export function App() {
         {navTab === 'pomodoro' && (
           <PomodoroTimer
             topics={topics}
-            onAddEntry={(entry) => {
-              handleAddEntry(entry)
-              // Revenir sur le tracker pour admirer les points allumés
-              setNavTab('tracker')
-              setCurrentView('day')
-            }}
+            pomodoro={pomodoro}
           />
         )}
       </main>
@@ -169,6 +172,7 @@ export function App() {
         slots={day24Hours}
         stats={daySummaryStats}
         selectedDate={selectedDate}
+        pomodoro={pomodoro}
       />
     </div>
   )

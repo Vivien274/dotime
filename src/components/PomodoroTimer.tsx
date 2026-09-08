@@ -1,170 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React from 'react'
 import type { ActivityType, PreloadedTopic } from '../types'
 import { ACTIVITY_TYPES_META } from '../constants/initialData'
-import confetti from 'canvas-confetti'
-import { Play, Pause, RotateCcw, Check, Sparkles, Coffee, Flame, CheckCircle2 } from 'lucide-react'
+import { usePomodoro, POMODORO_PRESETS, type PomodoroMode } from '../hooks/usePomodoro'
+import { Play, Pause, RotateCcw, Check, Sparkles, CheckCircle2 } from 'lucide-react'
 
 interface PomodoroTimerProps {
   topics: PreloadedTopic[]
-  onAddEntry: (entry: {
-    title: string
-    type: ActivityType
-    startTime: string
-    endTime: string
-  }) => void
+  pomodoro: ReturnType<typeof usePomodoro>
 }
 
-type PomodoroMode = 'focus25' | 'focus50' | 'shortBreak' | 'longBreak'
-
-const PRESETS: Record<
-  PomodoroMode,
-  { label: string; minutes: number; isBreak: boolean; icon: any }
-> = {
-  focus25: { label: 'Focus 25m', minutes: 25, isBreak: false, icon: Flame },
-  focus50: { label: 'Deep 50m', minutes: 50, isBreak: false, icon: Flame },
-  shortBreak: { label: 'Pause 5m', minutes: 5, isBreak: true, icon: Coffee },
-  longBreak: { label: 'Pause 15m', minutes: 15, isBreak: true, icon: Coffee },
-}
-
-export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, onAddEntry }) => {
-  const [mode, setMode] = useState<PomodoroMode>('focus25')
-  const [timeLeft, setTimeLeft] = useState(PRESETS.focus25.minutes * 60)
-  const [isRunning, setIsRunning] = useState(false)
-
-  // Activité en cours
-  const [selectedType, setSelectedType] = useState<ActivityType>('pro')
-  const [taskTitle, setTaskTitle] = useState('Dev / Code')
-
-  // Date/Heure de début pour l'enregistrement
-  const sessionStartTimeRef = useRef<Date | null>(null)
-  const [completedSession, setCompletedSession] = useState<{
-    title: string
-    type: ActivityType
-    durationMinutes: number
-    startTimeStr: string
-    endTimeStr: string
-  } | null>(null)
-
-  // Bip rétro 8-bit avec Web Audio API
-  const playRetroBeep = () => {
-    try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-      if (!AudioContextClass) return
-      const audioCtx = new AudioContextClass()
-      const now = audioCtx.currentTime
-
-      const osc1 = audioCtx.createOscillator()
-      const gain1 = audioCtx.createGain()
-      osc1.type = 'square'
-      osc1.frequency.setValueAtTime(880, now)
-      gain1.gain.setValueAtTime(0.12, now)
-      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15)
-      osc1.connect(gain1)
-      gain1.connect(audioCtx.destination)
-      osc1.start(now)
-      osc1.stop(now + 0.15)
-
-      const osc2 = audioCtx.createOscillator()
-      const gain2 = audioCtx.createGain()
-      osc2.type = 'square'
-      osc2.frequency.setValueAtTime(1320, now + 0.18)
-      gain2.gain.setValueAtTime(0.12, now + 0.18)
-      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.4)
-      osc2.connect(gain2)
-      gain2.connect(audioCtx.destination)
-      osc2.start(now + 0.18)
-      osc2.stop(now + 0.4)
-    } catch (e) {
-      console.log('Audio error:', e)
-    }
-  }
-
-  // Changer de mode
-  const handleSelectMode = (newMode: PomodoroMode) => {
-    setMode(newMode)
-    setTimeLeft(PRESETS[newMode].minutes * 60)
-    setIsRunning(false)
-    sessionStartTimeRef.current = null
-  }
-
-  // Démarrer / Mettre en pause
-  const togglePlay = () => {
-    if (!isRunning) {
-      if (!sessionStartTimeRef.current) {
-        sessionStartTimeRef.current = new Date()
-      }
-      setIsRunning(true)
-    } else {
-      setIsRunning(false)
-    }
-  }
-
-  // Réinitialiser
-  const handleReset = () => {
-    setIsRunning(false)
-    setTimeLeft(PRESETS[mode].minutes * 60)
-    sessionStartTimeRef.current = null
-  }
-
-  // Fin de session
-  const handleFinishSession = () => {
-    setIsRunning(false)
-    playRetroBeep()
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors: ['#181818', '#FF9028', '#FFFFFF'],
-    })
-
-    if (!PRESETS[mode].isBreak && sessionStartTimeRef.current) {
-      const end = new Date()
-      const start = sessionStartTimeRef.current
-
-      const formatTime = (d: Date) =>
-        `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
-
-      const durationMins = Math.max(
-        1,
-        Math.round((end.getTime() - start.getTime()) / 60000)
-      )
-
-      setCompletedSession({
-        title: taskTitle.trim() || 'Session Focus',
-        type: selectedType,
-        durationMinutes: durationMins,
-        startTimeStr: formatTime(start),
-        endTimeStr: formatTime(end),
-      })
-    }
-  }
-
-  // Décompte de la seconde
-  useEffect(() => {
-    let interval: any = null
-    if (isRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval)
-            handleFinishSession()
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    }
-    return () => clearInterval(interval)
-  }, [isRunning, timeLeft])
-
-  // Formater mm:ss
-  const minutes = Math.floor(timeLeft / 60)
-  const seconds = timeLeft % 60
-  const timeFormatted = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, pomodoro }) => {
+  const {
+    mode,
+    timeLeft,
+    timeFormatted,
+    isRunning,
+    selectedType,
+    taskTitle,
+    completedSession,
+    totalSeconds,
+    isBreak,
+    currentPreset,
+    handleSelectMode,
+    togglePlay,
+    handleReset,
+    handleFinishSession,
+    setSelectedType,
+    setTaskTitle,
+    handleSaveToTimdot,
+    dismissCompletedSession,
+  } = pomodoro
 
   // Anneau de 36 points Nothing OS
-  const totalSeconds = PRESETS[mode].minutes * 60
-  const progressPercent = (totalSeconds - timeLeft) / totalSeconds
+  const progressPercent = (totalSeconds - timeLeft) / Math.max(1, totalSeconds)
   const DOTS_COUNT = 36
   const activeDotsCount = Math.round((1 - progressPercent) * DOTS_COUNT)
 
@@ -177,22 +45,6 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, onAddEntry
     const isActive = i < activeDotsCount
     return { id: i, x, y, isActive }
   })
-
-  // Enregistrer le créneau dans Timdot
-  const handleSaveToTimdot = () => {
-    if (!completedSession) return
-
-    onAddEntry({
-      title: completedSession.title,
-      type: completedSession.type,
-      startTime: completedSession.startTimeStr,
-      endTime: completedSession.endTimeStr,
-    })
-
-    setCompletedSession(null)
-    sessionStartTimeRef.current = null
-    handleReset()
-  }
 
   // Filtrer les sujets correspondant au type choisi
   const filteredTopics = topics.filter((t) => t.type === selectedType)
@@ -210,14 +62,14 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, onAddEntry
             </h3>
           </div>
           <span className="text-[10px] font-mono-tech font-bold px-2.5 py-0.5 rounded-full bg-black/10 text-zinc-900">
-            {PRESETS[mode].label}
+            {currentPreset.label}
           </span>
         </div>
 
         {/* Sélecteur de presets de durée */}
         <div className="grid grid-cols-4 gap-1.5 p-1 rounded-2xl bg-black/10 border border-black/5 mb-6">
-          {(Object.keys(PRESETS) as PomodoroMode[]).map((key) => {
-            const p = PRESETS[key]
+          {(Object.keys(POMODORO_PRESETS) as PomodoroMode[]).map((key) => {
+            const p = POMODORO_PRESETS[key]
             const isSelected = mode === key
             return (
               <button
@@ -244,7 +96,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, onAddEntry
                 cx={dot.x}
                 cy={dot.y}
                 r={dot.isActive ? 4.5 : 3}
-                fill={dot.isActive ? (PRESETS[mode].isBreak ? '#3B82F6' : '#FF9028') : 'rgba(0, 0, 0, 0.12)'}
+                fill={dot.isActive ? (isBreak ? '#3B82F6' : '#FF9028') : 'rgba(0, 0, 0, 0.12)'}
                 className="transition-all duration-300"
               />
             ))}
@@ -256,7 +108,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, onAddEntry
               {timeFormatted}
             </span>
             <span className="font-mono-tech text-[10px] tracking-widest uppercase font-bold text-zinc-700 mt-2">
-              {PRESETS[mode].isBreak ? 'PAUSE BIEN MÉRITÉE' : taskTitle}
+              {isBreak ? 'PAUSE BIEN MÉRITÉE' : taskTitle}
             </span>
           </div>
         </div>
@@ -305,7 +157,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, onAddEntry
       </div>
 
       {/* Sélection de la tâche en cours (seulement en mode Focus) */}
-      {!PRESETS[mode].isBreak && (
+      {!isBreak && (
         <div className="rounded-3xl bg-white/25 backdrop-blur-xl border border-white/40 shadow-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <span className="font-mono-tech text-xs font-bold uppercase tracking-wider text-zinc-900">
@@ -388,7 +240,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, onAddEntry
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setCompletedSession(null)}
+              onClick={dismissCompletedSession}
               className="px-3 py-2 rounded-xl text-xs font-mono-tech font-bold text-zinc-700 hover:bg-black/10 transition-colors"
             >
               IGNORER
