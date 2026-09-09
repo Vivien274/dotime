@@ -100,3 +100,57 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Thème Sombre OLED Nothing OS (Glyph Dark) */
+body.theme-dark {
+  background: linear-gradient(180deg, #141414 0%, #0a0a0a 50%, #050505 100%) no-repeat fixed !important;
+  background-color: #0a0a0a !important;
+  color: #f4f4f5 !important;
+}
+
+body.theme-dark .text-\[\#181818\] {
+  color: #ffffff !important;
+}
+
+body.theme-dark .text-zinc-900,
+body.theme-dark .text-zinc-900\/80,
+body.theme-dark .text-zinc-900\/70,
+body.theme-dark .text-zinc-800 {
+  color: #f4f4f5 !important;
+}
+
+body.theme-dark .text-zinc-700 {
+  color: #a1a1aa !important;
+}
+
+body.theme-dark .bg-white\/20,
+body.theme-dark .bg-white\/25,
+body.theme-dark .bg-white\/30,
+body.theme-dark .bg-white\/35,
+body.theme-dark .bg-white\/40,
+body.theme-dark .bg-white\/50 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.theme-dark .bg-black\/5,
+body.theme-dark .bg-black\/10,
+body.theme-dark .bg-black\/15 {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.theme-dark .border-black\/5,
+body.theme-dark .border-black\/10 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.theme-dark .bg-white\/70,
+body.theme-dark .bg-white\/80 {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark input {
+  color: #ffffff !important;
+}
+

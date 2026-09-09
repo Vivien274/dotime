@@ -141,6 +141,37 @@ export function usePomodoro(
     initial.completedSession
   )
 
+  // Compteur de cycles du jour
+  const getTodayCyclesKey = () => `timdot_pomodoro_cycles_${new Date().toISOString().split('T')[0]}`
+  const [dailyCycles, setDailyCycles] = useState<number>(() => {
+    try {
+      return Number(localStorage.getItem(getTodayCyclesKey()) || 0)
+    } catch {
+      return 0
+    }
+  })
+
+  // Permission de notifications
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      return Notification.permission
+    }
+    return 'default'
+  })
+
+  const requestNotificationPermission = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const res = await Notification.requestPermission()
+        setNotificationPermission(res)
+        return res
+      } catch {
+        return 'denied'
+      }
+    }
+    return 'denied'
+  }
+
   // Bip rétro 8-bit Web Audio
   const playRetroBeep = () => {
     try {
@@ -191,21 +222,53 @@ export function usePomodoro(
       // ignore
     }
 
-    if (!POMODORO_PRESETS[mode].isBreak && sessionStartTimestamp) {
-      const end = new Date()
-      const start = new Date(sessionStartTimestamp)
-      const durationMins = Math.max(
-        1,
-        Math.round((end.getTime() - start.getTime()) / 60000)
-      )
+    const isBreakSession = POMODORO_PRESETS[mode].isBreak
 
-      setCompletedSession({
-        title: taskTitle.trim() || 'Session Focus',
-        type: selectedType,
-        durationMinutes: durationMins,
-        startTimeStr: formatClockTime(start),
-        endTimeStr: formatClockTime(end),
+    // Déclencher une notification Web/PWA
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        const notifTitle = isBreakSession ? 'Timdot — Pause terminée !' : 'Timdot — Bloc focus terminé !'
+        const notifBody = isBreakSession
+          ? 'La pause est finie. Prêt pour une nouvelle session ?'
+          : `Bravo ! Votre session « ${taskTitle.trim() || 'Focus'} » est bouclée.`
+        new Notification(notifTitle, {
+          body: notifBody,
+          icon: '/favicon.ico',
+        })
+      } catch (e) {
+        console.log('Notification error:', e)
+      }
+    }
+
+    if (!isBreakSession) {
+      // Incrémenter le compteur de cycles du jour
+      setDailyCycles((prev) => {
+        const next = prev + 1
+        try {
+          const key = `timdot_pomodoro_cycles_${new Date().toISOString().split('T')[0]}`
+          localStorage.setItem(key, String(next))
+        } catch {
+          // ignore
+        }
+        return next
       })
+
+      if (sessionStartTimestamp) {
+        const end = new Date()
+        const start = new Date(sessionStartTimestamp)
+        const durationMins = Math.max(
+          1,
+          Math.round((end.getTime() - start.getTime()) / 60000)
+        )
+
+        setCompletedSession({
+          title: taskTitle.trim() || 'Session Focus',
+          type: selectedType,
+          durationMinutes: durationMins,
+          startTimeStr: formatClockTime(start),
+          endTimeStr: formatClockTime(end),
+        })
+      }
     }
   }, [mode, sessionStartTimestamp, taskTitle, selectedType])
 
@@ -350,5 +413,8 @@ export function usePomodoro(
     setTaskTitle,
     handleSaveToTimdot,
     dismissCompletedSession,
+    dailyCycles,
+    notificationPermission,
+    requestNotificationPermission,
   }
 }

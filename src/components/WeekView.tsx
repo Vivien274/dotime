@@ -11,7 +11,7 @@ import {
   isHourCoveredByEntry,
   ACTIVITY_TYPES_META,
 } from '../constants/initialData'
-import { ChevronLeft, ChevronRight, Calendar, ArrowRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, ArrowRight, TrendingUp, TrendingDown } from 'lucide-react'
 
 interface WeekViewProps {
   selectedDate: string
@@ -27,8 +27,15 @@ export const WeekView: React.FC<WeekViewProps> = ({
   // Liste des 7 jours de la semaine (du Lundi au Dimanche)
   const weekDates = useMemo(() => getWeekDaysForDate(selectedDate), [selectedDate])
 
-  // Requête Convex temps réel pour les 7 jours
+  // Requête Convex temps réel pour les 7 jours de la semaine courante
   const weekData = useQuery(api.entries.getByDateList, { dates: weekDates })
+
+  // Semaine précédente (N-1) pour le comparatif
+  const prevWeekDates = useMemo(() => {
+    return weekDates.map((d) => getOffsetDateKey(d, -7))
+  }, [weekDates])
+
+  const prevWeekData = useQuery(api.entries.getByDateList, { dates: prevWeekDates })
 
   const todayKey = getFormattedDateKey()
 
@@ -137,6 +144,28 @@ export const WeekView: React.FC<WeekViewProps> = ({
     }
   }, [weekDates, weekData, todayKey, selectedDate])
 
+  // Calcul des heures actives de la semaine précédente (N-1)
+  const prevWeekActiveHours = useMemo(() => {
+    if (!prevWeekData) return null
+    let totalMins = 0
+    prevWeekDates.forEach((dateKey) => {
+      const entries = prevWeekData[dateKey] || []
+      entries.forEach((e) => {
+        if (!isNightActivity(e.title)) {
+          const dur = calculateDurationHours(e.startTime, e.endTime)
+          totalMins += Math.round(dur * 60)
+        }
+      })
+    })
+    return Number((totalMins / 60).toFixed(1))
+  }, [prevWeekData, prevWeekDates])
+
+  const diffHours = prevWeekActiveHours !== null ? Number((weekTotalActiveHours - prevWeekActiveHours).toFixed(1)) : null
+  const diffPercent =
+    prevWeekActiveHours && prevWeekActiveHours > 0
+      ? Math.round(((weekTotalActiveHours - prevWeekActiveHours) / prevWeekActiveHours) * 100)
+      : null
+
   const mondayDate = new Date(weekDates[0] + 'T12:00:00')
   const sundayDate = new Date(weekDates[6] + 'T12:00:00')
   const weekRangeLabel = `${mondayDate.getDate()} ${mondayDate.toLocaleDateString('fr-FR', { month: 'short' })} — ${sundayDate.getDate()} ${sundayDate.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}`
@@ -180,9 +209,21 @@ export const WeekView: React.FC<WeekViewProps> = ({
       {/* Synthèse globale de la semaine */}
       <div className="rounded-3xl bg-white/25 backdrop-blur-xl border border-white/40 shadow-xl p-5">
         <div className="flex items-center justify-between mb-3">
-          <span className="font-mono-tech text-xs tracking-wider uppercase font-bold text-zinc-800">
-            BILAN ACTIF DE LA SEMAINE
-          </span>
+          <div className="flex flex-col">
+            <span className="font-mono-tech text-xs tracking-wider uppercase font-bold text-zinc-800">
+              BILAN ACTIF DE LA SEMAINE
+            </span>
+            {diffHours !== null && prevWeekActiveHours !== null && prevWeekActiveHours > 0 && (
+              <span className={`inline-flex items-center gap-1 text-[10px] font-mono-tech font-bold mt-0.5 ${
+                diffHours >= 0 ? 'text-emerald-700' : 'text-zinc-600'
+              }`}>
+                {diffHours >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                <span>
+                  {diffHours >= 0 ? `+${diffHours}h` : `${diffHours}h`} ({diffHours >= 0 ? `+${diffPercent}%` : `${diffPercent}%`}) vs sem. préc.
+                </span>
+              </span>
+            )}
+          </div>
           <span className="font-dot text-lg font-bold text-[#181818]">
             {weekTotalActiveHours}H ACTIF
           </span>

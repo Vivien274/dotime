@@ -1,5 +1,4 @@
-import React from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Monitor } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Monitor, Sun, Moon, Share2 } from 'lucide-react'
 import { getFormattedDateKey } from '../constants/initialData'
 
 interface HeaderProps {
@@ -8,6 +7,9 @@ interface HeaderProps {
   totalHours: number
   onResetDay?: () => void
   onOpenStandby?: () => void
+  theme?: 'light' | 'dark'
+  onToggleTheme?: () => void
+  onOpenExport?: () => void
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,6 +17,9 @@ export const Header: React.FC<HeaderProps> = ({
   onDateChange,
   totalHours,
   onOpenStandby,
+  theme = 'light',
+  onToggleTheme,
+  onOpenExport,
 }) => {
   // Parser la date sélectionnée
   const dateObj = new Date(selectedDate + 'T12:00:00')
@@ -51,6 +56,26 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="font-dot text-[11px] tracking-wider text-[#181818]">TIMDOT (24H)</span>
         </div>
         <div className="flex items-center gap-1.5">
+          {onOpenExport && (
+            <button
+              onClick={onOpenExport}
+              title="Exporter le bilan du jour"
+              className="p-1.5 rounded-full bg-white/25 hover:bg-[#181818] hover:text-white border border-black/10 text-zinc-800 transition-all cursor-pointer"
+            >
+              <Share2 size={11} />
+            </button>
+          )}
+
+          {onToggleTheme && (
+            <button
+              onClick={onToggleTheme}
+              title={theme === 'dark' ? 'Passer au thème clair orange' : 'Passer au thème sombre OLED'}
+              className="p-1.5 rounded-full bg-white/25 hover:bg-[#181818] hover:text-white border border-black/10 text-zinc-800 transition-all cursor-pointer"
+            >
+              {theme === 'dark' ? <Sun size={11} className="text-[#FF9028]" /> : <Moon size={11} />}
+            </button>
+          )}
+
           {onOpenStandby && (
             <button
               onClick={onOpenStandby}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTimeTracker } from './hooks/useTimeTracker'
 import { usePomodoro } from './hooks/usePomodoro'
 import { Header } from './components/Header'
@@ -6,18 +6,48 @@ import { Day24Matrix } from './components/Day24Matrix'
 import { TimeEntryForm } from './components/TimeEntryForm'
 import { DayEntriesList } from './components/DayEntriesList'
 import { WeekView } from './components/WeekView'
+import { MonthHeatmapView } from './components/MonthHeatmapView'
+import { ExportSummaryModal } from './components/ExportSummaryModal'
 import { StandbyMode } from './components/StandbyMode'
 import { BottomNav, type NavTab } from './components/BottomNav'
 import { PomodoroTimer } from './components/PomodoroTimer'
 import type { ActivityType } from './types'
 import confetti from 'canvas-confetti'
-import { Clock, Calendar } from 'lucide-react'
+import { Clock, Calendar, LayoutGrid } from 'lucide-react'
 
 export function App() {
   const [selectedHour, setSelectedHour] = useState<number | null>(null)
+  const [prefilledRange, setPrefilledRange] = useState<{ startTime: string; endTime: string } | null>(null)
   const [navTab, setNavTab] = useState<NavTab>('tracker')
-  const [currentView, setCurrentView] = useState<'day' | 'week'>('day')
+  const [currentView, setCurrentView] = useState<'day' | 'week' | 'month'>('day')
   const [isStandbyOpen, setIsStandbyOpen] = useState(false)
+  const [isExportOpen, setIsExportOpen] = useState(false)
+
+  // Thème Sombre OLED Nothing OS (Glyph Dark)
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      return (localStorage.getItem('timdot_theme') as 'light' | 'dark') || 'light'
+    } catch {
+      return 'light'
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('timdot_theme', theme)
+    } catch {
+      // ignore
+    }
+    if (theme === 'dark') {
+      document.body.classList.add('theme-dark')
+    } else {
+      document.body.classList.remove('theme-dark')
+    }
+  }, [theme])
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))
+  }
 
   const {
     topics,
@@ -38,6 +68,10 @@ export function App() {
     setSelectedHour((prev) => (prev === hour ? null : hour))
   }
 
+  const handleSelectHole = (range: { startTime: string; endTime: string }) => {
+    setPrefilledRange(range)
+  }
+
   const handleAddEntry = (entryData: {
     title: string
     type: ActivityType
@@ -46,6 +80,7 @@ export function App() {
   }) => {
     addEntry(entryData)
     setSelectedHour(null)
+    setPrefilledRange(null)
     confetti({
       particleCount: 35,
       spread: 50,
@@ -63,31 +98,39 @@ export function App() {
 
   return (
     <div
-      className="min-h-screen w-full text-zinc-900 bg-dot-pattern relative flex flex-col items-center justify-start py-4 px-3 sm:px-4 pb-24"
+      className={`min-h-screen w-full relative flex flex-col items-center justify-start py-4 px-3 sm:px-4 pb-24 ${
+        theme === 'dark' ? 'bg-dot-pattern-dark text-white' : 'bg-dot-pattern text-zinc-900'
+      }`}
       style={{
-        background: 'linear-gradient(180deg, #FFA43B 0%, #FF9028 45%, #FF8412 100%)',
-        backgroundColor: '#FF9028',
+        background:
+          theme === 'dark'
+            ? 'linear-gradient(180deg, #141414 0%, #0c0c0c 50%, #060606 100%)'
+            : 'linear-gradient(180deg, #FFA43B 0%, #FF9028 45%, #FF8412 100%)',
+        backgroundColor: theme === 'dark' ? '#0c0c0c' : '#FF9028',
       }}
     >
       {/* Conteneur Mobile First épuré Nothing OS */}
       <main className="w-full max-w-md mx-auto flex flex-col space-y-4">
-        {/* Header avec Grand numéro Dot-Matrix et bouton Standby */}
+        {/* Header avec Grand numéro Dot-Matrix, boutons Veille, Thème et Export */}
         <Header
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
           totalHours={daySummaryStats.totalHours}
           onOpenStandby={() => setIsStandbyOpen(true)}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+          onOpenExport={() => setIsExportOpen(true)}
         />
 
-        {/* 1. Onglet TRACKER (Jour & Semaine) */}
+        {/* 1. Onglet SUIVI (Jour / Semaine / Mois) */}
         {navTab === 'tracker' && (
           <>
-            {/* Commutateur de vue Nothing OS : JOUR / SEMAINE */}
+            {/* Commutateur de vue Nothing OS : JOUR / SEMAINE / MOIS */}
             <div className="flex items-center justify-center">
               <div className="inline-flex p-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-sm">
                 <button
                   onClick={() => setCurrentView('day')}
-                  className={`flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-mono-tech font-bold uppercase tracking-wider transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-mono-tech font-bold uppercase tracking-wider transition-all duration-200 ${
                     currentView === 'day'
                       ? 'bg-[#181818] text-white shadow-md'
                       : 'text-zinc-800 hover:text-black'
@@ -98,7 +141,7 @@ export function App() {
                 </button>
                 <button
                   onClick={() => setCurrentView('week')}
-                  className={`flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-mono-tech font-bold uppercase tracking-wider transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-mono-tech font-bold uppercase tracking-wider transition-all duration-200 ${
                     currentView === 'week'
                       ? 'bg-[#181818] text-white shadow-md'
                       : 'text-zinc-800 hover:text-black'
@@ -107,20 +150,32 @@ export function App() {
                   <Calendar size={12} />
                   <span>SEMAINE</span>
                 </button>
+                <button
+                  onClick={() => setCurrentView('month')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-mono-tech font-bold uppercase tracking-wider transition-all duration-200 ${
+                    currentView === 'month'
+                      ? 'bg-[#181818] text-white shadow-md'
+                      : 'text-zinc-800 hover:text-black'
+                  }`}
+                >
+                  <LayoutGrid size={12} />
+                  <span>MOIS</span>
+                </button>
               </div>
             </div>
 
             {/* Affichage conditionnel selon la sous-vue */}
-            {currentView === 'day' ? (
+            {currentView === 'day' && (
               <>
                 {/* Grille de 24 points purs représentant les 24 heures de la journée */}
                 <Day24Matrix
                   slots={day24Hours}
                   onSelectHour={handleSelectHour}
+                  onSelectHole={handleSelectHole}
                   selectedHour={selectedHour}
                 />
 
-                {/* Formulaire de saisie standard */}
+                {/* Formulaire de saisie standard avec bouton Maintenant & Détection de trou */}
                 <TimeEntryForm
                   topics={topics}
                   suggestedStartTime={suggestedStartTime}
@@ -128,6 +183,7 @@ export function App() {
                   onAddEntry={handleAddEntry}
                   onAddTopic={addTopic}
                   initialStartHour={selectedHour}
+                  prefilledRange={prefilledRange}
                 />
 
                 {/* Déroulé chronologique des activités & Répartition du temps avec Édition */}
@@ -138,9 +194,20 @@ export function App() {
                   stats={daySummaryStats}
                 />
               </>
-            ) : (
-              /* Vue Semaine : Rétrospective sur 7 jours avec mini-matrices */
+            )}
+
+            {currentView === 'week' && (
+              /* Vue Semaine : Rétrospective sur 7 jours avec comparatif N vs N-1 */
               <WeekView
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+                onSwitchToDayView={() => setCurrentView('day')}
+              />
+            )}
+
+            {currentView === 'month' && (
+              /* Vue Mois : Heatmap Nothing OS façon GitHub */
+              <MonthHeatmapView
                 selectedDate={selectedDate}
                 onSelectDate={setSelectedDate}
                 onSwitchToDayView={() => setCurrentView('day')}
@@ -173,6 +240,15 @@ export function App() {
         stats={daySummaryStats}
         selectedDate={selectedDate}
         pomodoro={pomodoro}
+      />
+
+      {/* Modal d'export du bilan (Texte / Markdown) */}
+      <ExportSummaryModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        selectedDate={selectedDate}
+        entries={currentDayEntries}
+        stats={daySummaryStats}
       />
     </div>
   )

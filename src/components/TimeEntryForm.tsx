@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import type { ActivityType, PreloadedTopic } from '../types'
 import { ACTIVITY_TYPES_META, timeStringToHours } from '../constants/initialData'
 import { IconRenderer } from './IconRenderer'
-import { Plus, Check, Sparkles } from 'lucide-react'
+import { Plus, Check, Sparkles, Clock } from 'lucide-react'
 
 interface TimeEntryFormProps {
   topics: PreloadedTopic[]
@@ -16,6 +16,7 @@ interface TimeEntryFormProps {
   }) => void
   onAddTopic: (topic: { name: string; type: ActivityType; icon?: string }) => void
   initialStartHour?: number | null
+  prefilledRange?: { startTime: string; endTime: string } | null
 }
 
 export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
@@ -25,6 +26,7 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
   onAddEntry,
   onAddTopic,
   initialStartHour,
+  prefilledRange,
 }) => {
   const [activeType, setActiveType] = useState<ActivityType>('pro')
   const [selectedTopicName, setSelectedTopicName] = useState('Réunion')
@@ -34,9 +36,12 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
   const [isAddingNewTopic, setIsAddingNewTopic] = useState(false)
   const [newTopicName, setNewTopicName] = useState('')
 
-  // Mettre à jour les suggestions quand la liste des entrées évolue
+  // Mettre à jour les suggestions quand la liste des entrées évolue ou lors d'une détection de trou
   useEffect(() => {
-    if (initialStartHour !== null && initialStartHour !== undefined) {
+    if (prefilledRange) {
+      setStartTime(prefilledRange.startTime)
+      setEndTime(prefilledRange.endTime)
+    } else if (initialStartHour !== null && initialStartHour !== undefined) {
       const startStr = `${initialStartHour.toString().padStart(2, '0')}:00`
       const endH = (initialStartHour + 1) % 24
       const endStr = `${endH.toString().padStart(2, '0')}:00`
@@ -46,7 +51,14 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
       setStartTime(suggestedStartTime)
       setEndTime(suggestedEndTime)
     }
-  }, [suggestedStartTime, suggestedEndTime, initialStartHour])
+  }, [suggestedStartTime, suggestedEndTime, initialStartHour, prefilledRange])
+
+  const handleSetNow = () => {
+    const now = new Date()
+    const h = now.getHours().toString().padStart(2, '0')
+    const m = now.getMinutes().toString().padStart(2, '0')
+    setEndTime(`${h}:${m}`)
+  }
 
   // Filtrer les sujets selon le type sélectionné (Pro, Perso, Entreprises)
   const currentTypeTopics = topics.filter((t) => t.type === activeType)
@@ -279,9 +291,20 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
 
             {/* À */}
             <div>
-              <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold mb-1">
-                {isNightTopic ? 'Réveil (Ce matin)' : 'À (Fin arrondie)'}
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold">
+                  {isNightTopic ? 'Réveil (Ce matin)' : 'À (Fin)'}
+                </label>
+                <button
+                  type="button"
+                  onClick={handleSetNow}
+                  title="Régler sur l'heure actuelle"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/10 hover:bg-[#181818] hover:text-white text-zinc-800 text-[9px] font-mono-tech font-bold uppercase transition-colors cursor-pointer"
+                >
+                  <Clock size={9} />
+                  <span>Maintenant</span>
+                </button>
+              </div>
               <input
                 type="time"
                 required

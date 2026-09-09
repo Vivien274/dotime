@@ -4,17 +4,40 @@ import type { HourSlot } from '../hooks/useTimeTracker'
 interface Day24MatrixProps {
   slots: HourSlot[]
   onSelectHour: (hour: number) => void
+  onSelectHole?: (range: { startTime: string; endTime: string }) => void
   selectedHour: number | null
 }
 
 export const Day24Matrix: React.FC<Day24MatrixProps> = ({
   slots,
   onSelectHour,
+  onSelectHole,
   selectedHour,
 }) => {
   const loggedCount = slots.filter((s) => s.isFilled).length
   const activeCount = slots.filter((s) => s.isFilled && !s.isNight).length
   const nightCount = slots.filter((s) => s.isFilled && s.isNight).length
+
+  const handleSlotClick = (slot: HourSlot) => {
+    onSelectHour(slot.hour)
+    if (!slot.isFilled && onSelectHole) {
+      // Trouver la plage vide continue autour de cette heure (trou)
+      let startH = slot.hour
+      while (startH > 0 && !slots[startH - 1]?.isFilled) {
+        startH--
+      }
+      let endH = slot.hour
+      while (endH < 23 && !slots[endH + 1]?.isFilled) {
+        endH++
+      }
+
+      const startStr = `${startH.toString().padStart(2, '0')}:00`
+      const nextH = endH + 1
+      const endStr = nextH === 24 ? '00:00' : `${nextH.toString().padStart(2, '0')}:00`
+
+      onSelectHole({ startTime: startStr, endTime: endStr })
+    }
+  }
 
   return (
     <div className="rounded-3xl bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg p-5">
@@ -45,7 +68,7 @@ export const Day24Matrix: React.FC<Day24MatrixProps> = ({
               <button
                 key={slot.hour}
                 type="button"
-                onClick={() => onSelectHour(slot.hour)}
+                onClick={() => handleSlotClick(slot)}
                 title={`${slot.label}${
                   slot.matchingEntry
                     ? ` : ${slot.matchingEntry.title} (${isNight ? 'Nuit / Sommeil' : 'Actif'})`
@@ -99,7 +122,7 @@ export const Day24Matrix: React.FC<Day24MatrixProps> = ({
               <button
                 key={slot.hour}
                 type="button"
-                onClick={() => onSelectHour(slot.hour)}
+                onClick={() => handleSlotClick(slot)}
                 title={`${slot.label}${
                   slot.matchingEntry
                     ? ` : ${slot.matchingEntry.title} (${isNight ? 'Nuit / Sommeil' : 'Actif'})`

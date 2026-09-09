@@ -2,7 +2,7 @@ import React from 'react'
 import type { ActivityType, PreloadedTopic } from '../types'
 import { ACTIVITY_TYPES_META } from '../constants/initialData'
 import { usePomodoro, POMODORO_PRESETS, type PomodoroMode } from '../hooks/usePomodoro'
-import { Play, Pause, RotateCcw, Check, Sparkles, CheckCircle2 } from 'lucide-react'
+import { Play, Pause, RotateCcw, Check, Sparkles, CheckCircle2, Bell } from 'lucide-react'
 
 interface PomodoroTimerProps {
   topics: PreloadedTopic[]
@@ -20,7 +20,6 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, pomodoro }
     completedSession,
     totalSeconds,
     isBreak,
-    currentPreset,
     handleSelectMode,
     togglePlay,
     handleReset,
@@ -29,6 +28,9 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, pomodoro }
     setTaskTitle,
     handleSaveToTimdot,
     dismissCompletedSession,
+    dailyCycles,
+    notificationPermission,
+    requestNotificationPermission,
   } = pomodoro
 
   // Anneau de 36 points Nothing OS
@@ -61,9 +63,23 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, pomodoro }
               FOCUS // POMODORO
             </h3>
           </div>
-          <span className="text-[10px] font-mono-tech font-bold px-2.5 py-0.5 rounded-full bg-black/10 text-zinc-900">
-            {currentPreset.label}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {notificationPermission === 'default' && (
+              <button
+                type="button"
+                onClick={requestNotificationPermission}
+                title="Activer les alertes de fin de minuteur"
+                className="flex items-center gap-1 text-[10px] font-mono-tech font-bold px-2 py-0.5 rounded-full bg-white/40 hover:bg-white text-zinc-800 transition-colors"
+              >
+                <Bell size={10} />
+                <span>Notifs</span>
+              </button>
+            )}
+            <span className="text-[10px] font-mono-tech font-bold px-2 py-0.5 rounded-full bg-black/10 text-zinc-900 flex items-center gap-1">
+              <span>🍅</span>
+              <span>{dailyCycles} cycle{dailyCycles > 1 ? 's' : ''}</span>
+            </span>
+          </div>
         </div>
 
         {/* Sélecteur de presets de durée */}
