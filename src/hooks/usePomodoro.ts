@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { ActivityType } from '../types'
 import confetti from 'canvas-confetti'
 
@@ -14,6 +14,107 @@ export const POMODORO_PRESETS: Record<
   longBreak: { label: 'Pause 15m', minutes: 15, isBreak: true },
 }
 
+const STORAGE_KEY = 'timdot_pomodoro_state_v1'
+
+interface CompletedSessionData {
+  title: string
+  type: ActivityType
+  durationMinutes: number
+  startTimeStr: string
+  endTimeStr: string
+}
+
+interface StoredPomodoroState {
+  mode: PomodoroMode
+  timeLeft: number
+  isRunning: boolean
+  targetEndTime: number | null
+  sessionStartTimestamp: number | null
+  selectedType: ActivityType
+  taskTitle: string
+  completedSession: CompletedSessionData | null
+}
+
+const formatClockTime = (d: Date) =>
+  `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
+
+const getInitialState = (): StoredPomodoroState => {
+  const defaultMode: PomodoroMode = 'focus25'
+  const defaultSeconds = POMODORO_PRESETS[defaultMode].minutes * 60
+  const defaults: StoredPomodoroState = {
+    mode: defaultMode,
+    timeLeft: defaultSeconds,
+    isRunning: false,
+    targetEndTime: null,
+    sessionStartTimestamp: null,
+    selectedType: 'pro',
+    taskTitle: 'Dev / Code',
+    completedSession: null,
+  }
+
+  if (typeof window === 'undefined') return defaults
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return defaults
+
+    const parsed = JSON.parse(raw) as Partial<StoredPomodoroState>
+    const validModes: PomodoroMode[] = ['focus25', 'focus50', 'shortBreak', 'longBreak']
+    const mode = validModes.includes(parsed.mode as PomodoroMode)
+      ? (parsed.mode as PomodoroMode)
+      : defaultMode
+    const presetSeconds = POMODORO_PRESETS[mode].minutes * 60
+
+    let isRunning = Boolean(parsed.isRunning)
+    let targetEndTime = typeof parsed.targetEndTime === 'number' ? parsed.targetEndTime : null
+    let sessionStartTimestamp =
+      typeof parsed.sessionStartTimestamp === 'number' ? parsed.sessionStartTimestamp : null
+    let timeLeft = typeof parsed.timeLeft === 'number' ? parsed.timeLeft : presetSeconds
+    let completedSession = parsed.completedSession || null
+
+    if (isRunning && targetEndTime) {
+      const now = Date.now()
+      const remaining = Math.max(0, Math.ceil((targetEndTime - now) / 1000))
+
+      if (remaining > 0) {
+        timeLeft = remaining
+      } else {
+        // La session s'est terminée pendant que l'onglet était fermé ou en cours de rafraîchissement
+        timeLeft = 0
+        isRunning = false
+        targetEndTime = null
+
+        if (!completedSession && !POMODORO_PRESETS[mode].isBreak && sessionStartTimestamp) {
+          const start = new Date(sessionStartTimestamp)
+          const end = new Date(parsed.targetEndTime || now)
+          const durationMins = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
+          completedSession = {
+            title: parsed.taskTitle?.trim() || 'Session Focus',
+            type: parsed.selectedType || 'pro',
+            durationMinutes: durationMins,
+            startTimeStr: formatClockTime(start),
+            endTimeStr: formatClockTime(end),
+          }
+        }
+      }
+    }
+
+    return {
+      mode,
+      timeLeft,
+      isRunning,
+      targetEndTime,
+      sessionStartTimestamp,
+      selectedType: parsed.selectedType || 'pro',
+      taskTitle: typeof parsed.taskTitle === 'string' ? parsed.taskTitle : 'Dev / Code',
+      completedSession,
+    }
+  } catch (e) {
+    console.error('Error reading Pomodoro state from localStorage:', e)
+    return defaults
+  }
+}
+
 export function usePomodoro(
   onAddEntry: (entry: {
     title: string
@@ -22,23 +123,23 @@ export function usePomodoro(
     endTime: string
   }) => void
 ) {
-  const [mode, setMode] = useState<PomodoroMode>('focus25')
-  const [timeLeft, setTimeLeft] = useState(POMODORO_PRESETS.focus25.minutes * 60)
-  const [isRunning, setIsRunning] = useState(false)
+  const [initial] = useState(getInitialState)
+
+  const [mode, setMode] = useState<PomodoroMode>(initial.mode)
+  const [timeLeft, setTimeLeft] = useState<number>(initial.timeLeft)
+  const [isRunning, setIsRunning] = useState<boolean>(initial.isRunning)
+  const [targetEndTime, setTargetEndTime] = useState<number | null>(initial.targetEndTime)
+  const [sessionStartTimestamp, setSessionStartTimestamp] = useState<number | null>(
+    initial.sessionStartTimestamp
+  )
 
   // Tâche associée
-  const [selectedType, setSelectedType] = useState<ActivityType>('pro')
-  const [taskTitle, setTaskTitle] = useState('Dev / Code')
+  const [selectedType, setSelectedType] = useState<ActivityType>(initial.selectedType)
+  const [taskTitle, setTaskTitle] = useState<string>(initial.taskTitle)
 
-  // Heure de début
-  const sessionStartTimeRef = useRef<Date | null>(null)
-  const [completedSession, setCompletedSession] = useState<{
-    title: string
-    type: ActivityType
-    durationMinutes: number
-    startTimeStr: string
-    endTimeStr: string
-  } | null>(null)
+  const [completedSession, setCompletedSession] = useState<CompletedSessionData | null>(
+    initial.completedSession
+  )
 
   // Bip rétro 8-bit Web Audio
   const playRetroBeep = () => {
@@ -74,51 +175,25 @@ export function usePomodoro(
     }
   }
 
-  // Changement de mode
-  const handleSelectMode = (newMode: PomodoroMode) => {
-    setMode(newMode)
-    setTimeLeft(POMODORO_PRESETS[newMode].minutes * 60)
-    setIsRunning(false)
-    sessionStartTimeRef.current = null
-  }
-
-  // Démarrer / Pause
-  const togglePlay = () => {
-    if (!isRunning) {
-      if (!sessionStartTimeRef.current) {
-        sessionStartTimeRef.current = new Date()
-      }
-      setIsRunning(true)
-    } else {
-      setIsRunning(false)
-    }
-  }
-
-  // Réinitialiser
-  const handleReset = () => {
-    setIsRunning(false)
-    setTimeLeft(POMODORO_PRESETS[mode].minutes * 60)
-    sessionStartTimeRef.current = null
-  }
-
   // Terminer la session
-  const handleFinishSession = () => {
+  const handleFinishSession = useCallback(() => {
     setIsRunning(false)
+    setTargetEndTime(null)
     playRetroBeep()
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors: ['#181818', '#FF9028', '#FFFFFF'],
-    })
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.6 },
+        colors: ['#181818', '#FF9028', '#FFFFFF'],
+      })
+    } catch {
+      // ignore
+    }
 
-    if (!POMODORO_PRESETS[mode].isBreak && sessionStartTimeRef.current) {
+    if (!POMODORO_PRESETS[mode].isBreak && sessionStartTimestamp) {
       const end = new Date()
-      const start = sessionStartTimeRef.current
-
-      const formatTime = (d: Date) =>
-        `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
-
+      const start = new Date(sessionStartTimestamp)
       const durationMins = Math.max(
         1,
         Math.round((end.getTime() - start.getTime()) / 60000)
@@ -128,29 +203,106 @@ export function usePomodoro(
         title: taskTitle.trim() || 'Session Focus',
         type: selectedType,
         durationMinutes: durationMins,
-        startTimeStr: formatTime(start),
-        endTimeStr: formatTime(end),
+        startTimeStr: formatClockTime(start),
+        endTimeStr: formatClockTime(end),
       })
+    }
+  }, [mode, sessionStartTimestamp, taskTitle, selectedType])
+
+  // Changement de mode
+  const handleSelectMode = (newMode: PomodoroMode) => {
+    setMode(newMode)
+    setTimeLeft(POMODORO_PRESETS[newMode].minutes * 60)
+    setIsRunning(false)
+    setTargetEndTime(null)
+    setSessionStartTimestamp(null)
+  }
+
+  // Démarrer / Pause
+  const togglePlay = () => {
+    if (!isRunning) {
+      const now = Date.now()
+      const effectiveTimeLeft = timeLeft > 0 ? timeLeft : POMODORO_PRESETS[mode].minutes * 60
+      const newTargetEndTime = now + effectiveTimeLeft * 1000
+
+      if (!sessionStartTimestamp) {
+        setSessionStartTimestamp(now)
+      }
+      setTargetEndTime(newTargetEndTime)
+      setTimeLeft(effectiveTimeLeft)
+      setIsRunning(true)
+    } else {
+      // Mise en pause : figer le temps restant
+      const now = Date.now()
+      if (targetEndTime) {
+        const remaining = Math.max(0, Math.ceil((targetEndTime - now) / 1000))
+        setTimeLeft(remaining)
+      }
+      setTargetEndTime(null)
+      setIsRunning(false)
     }
   }
 
-  // Décompte chaque seconde
+  // Réinitialiser
+  const handleReset = () => {
+    setIsRunning(false)
+    setTargetEndTime(null)
+    setSessionStartTimestamp(null)
+    setTimeLeft(POMODORO_PRESETS[mode].minutes * 60)
+  }
+
+  // Décompte précis basé sur l'horloge système (résistant au refresh et mise en veille)
   useEffect(() => {
     let interval: any = null
-    if (isRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval)
-            handleFinishSession()
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
+
+    if (isRunning && targetEndTime) {
+      const tick = () => {
+        const now = Date.now()
+        const remaining = Math.max(0, Math.ceil((targetEndTime - now) / 1000))
+        if (remaining <= 0) {
+          setTimeLeft(0)
+          handleFinishSession()
+        } else {
+          setTimeLeft(remaining)
+        }
+      }
+
+      tick()
+      interval = setInterval(tick, 500)
     }
-    return () => clearInterval(interval)
-  }, [isRunning, timeLeft, mode])
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isRunning, targetEndTime, handleFinishSession])
+
+  // Sauvegarde persistante dans localStorage
+  useEffect(() => {
+    try {
+      const stateToSave: StoredPomodoroState = {
+        mode,
+        timeLeft,
+        isRunning,
+        targetEndTime,
+        sessionStartTimestamp,
+        selectedType,
+        taskTitle,
+        completedSession,
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
+    } catch (e) {
+      console.error('Error saving Pomodoro state to localStorage:', e)
+    }
+  }, [
+    mode,
+    timeLeft,
+    isRunning,
+    targetEndTime,
+    sessionStartTimestamp,
+    selectedType,
+    taskTitle,
+    completedSession,
+  ])
 
   // Formater mm:ss
   const minutes = Math.floor(timeLeft / 60)
@@ -169,13 +321,13 @@ export function usePomodoro(
     })
 
     setCompletedSession(null)
-    sessionStartTimeRef.current = null
+    setSessionStartTimestamp(null)
     handleReset()
   }
 
   const dismissCompletedSession = () => {
     setCompletedSession(null)
-    sessionStartTimeRef.current = null
+    setSessionStartTimestamp(null)
     handleReset()
   }
 

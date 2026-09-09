@@ -84,8 +84,6 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
                           <Clock size={10} />
                           {entry.startTime}{isOvernight ? ' (hier)' : ''} - {entry.endTime}
                         </span>
-                        <span>·</span>
-                        <span>{durationLabel}</span>
                       </div>
                     </div>
                   </div>

@@ -22,7 +22,7 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats, entries
   const strokeWidth = 14
   const circumference = 2 * Math.PI * radius
 
-  // Calcul spécifique pour la plage de travail 9h - 18h (9 heures au total)
+  // Calcul spécifique pour la plage de travail 9h - 18h hors pause déjeuner 12h - 14h (7 heures au total)
   const workStats = useMemo(() => {
     const byTypeMins: Record<ActivityType, number> = {
       pro: 0,
@@ -35,7 +35,11 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats, entries
       // Exclure le sommeil de la répartition
       if (isNightActivity(entry.title)) return
 
-      const overlapMins = calculateEntryOverlapMinutes(entry.startTime, entry.endTime, 9, 18)
+      // Plage 9h - 18h en excluant la pause 12h - 14h (matin 9h-12h = 3h + après-midi 14h-18h = 4h)
+      const morningOverlap = calculateEntryOverlapMinutes(entry.startTime, entry.endTime, 9, 12)
+      const afternoonOverlap = calculateEntryOverlapMinutes(entry.startTime, entry.endTime, 14, 18)
+      const overlapMins = morningOverlap + afternoonOverlap
+
       if (overlapMins > 0) {
         activeMinutes += overlapMins
         if (byTypeMins[entry.type] !== undefined) {
@@ -58,7 +62,7 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats, entries
     })
 
     const activeHours = Number((activeMinutes / 60).toFixed(1))
-    const windowHours = 9
+    const windowHours = 7 // 9h-12h (3h) + 14h-18h (4h)
     const remainingHours = Number(Math.max(0, windowHours - activeHours).toFixed(1))
     const percentOfWindow = Math.min(100, Math.round((activeHours / windowHours) * 100))
 
@@ -76,7 +80,7 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats, entries
   const isWorkRange = timeRange === 'work'
   const currentByType = isWorkRange ? workStats.byType : stats.byType
   const currentActiveHours = isWorkRange ? workStats.activeHours : stats.activeHours
-  const windowHours = isWorkRange ? 9 : 24
+  const windowHours = isWorkRange ? 7 : 24
   const remainingHours = isWorkRange
     ? workStats.remainingHours
     : Number(Math.max(0, 24 - stats.totalHours).toFixed(1))
@@ -283,7 +287,7 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats, entries
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-zinc-600 uppercase tracking-wider text-[9px]">
                 {isWorkRange ? <Briefcase size={10} className="shrink-0" /> : <Clock size={10} className="shrink-0" />}
-                <span>{isWorkRange ? 'Reste 9h - 18h' : 'Temps restant'}</span>
+                <span>{isWorkRange ? 'Reste 9h-18h (hors 12h-14h)' : 'Temps restant'}</span>
               </span>
               <span className="font-bold text-[#181818] font-dot text-xs">
                 {remainingHours}h / {windowHours}h
