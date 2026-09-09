@@ -8,12 +8,13 @@ import { DayEntriesList } from './components/DayEntriesList'
 import { WeekView } from './components/WeekView'
 import { MonthHeatmapView } from './components/MonthHeatmapView'
 import { ExportSummaryModal } from './components/ExportSummaryModal'
+import { QuickAddModal } from './components/QuickAddModal'
 import { StandbyMode } from './components/StandbyMode'
 import { BottomNav, type NavTab } from './components/BottomNav'
 import { PomodoroTimer } from './components/PomodoroTimer'
 import type { ActivityType } from './types'
 import confetti from 'canvas-confetti'
-import { Clock, Calendar, LayoutGrid } from 'lucide-react'
+import { Clock, Calendar, LayoutGrid, Plus } from 'lucide-react'
 
 export function App() {
   const [selectedHour, setSelectedHour] = useState<number | null>(null)
@@ -22,8 +23,9 @@ export function App() {
   const [currentView, setCurrentView] = useState<'day' | 'week' | 'month'>('day')
   const [isStandbyOpen, setIsStandbyOpen] = useState(false)
   const [isExportOpen, setIsExportOpen] = useState(false)
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false)
 
-  // Thème Sombre OLED Nothing OS (Glyph Dark)
+  // Thème Sombre OLED (Glyph Dark)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       return (localStorage.getItem('timdot_theme') as 'light' | 'dark') || 'light'
@@ -109,7 +111,7 @@ export function App() {
         backgroundColor: theme === 'dark' ? '#0c0c0c' : '#FF9028',
       }}
     >
-      {/* Conteneur Mobile First épuré Nothing OS */}
+      {/* Conteneur Mobile First épuré */}
       <main className="w-full max-w-md mx-auto flex flex-col space-y-4">
         {/* Header avec Grand numéro Dot-Matrix, boutons Veille, Thème et Export */}
         <Header
@@ -125,7 +127,7 @@ export function App() {
         {/* 1. Onglet SUIVI (Jour / Semaine / Mois) */}
         {navTab === 'tracker' && (
           <>
-            {/* Commutateur de vue Nothing OS : JOUR / SEMAINE / MOIS */}
+            {/* Commutateur de vue : JOUR / SEMAINE / MOIS */}
             <div className="flex items-center justify-center">
               <div className="inline-flex p-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-sm">
                 <button
@@ -206,7 +208,7 @@ export function App() {
             )}
 
             {currentView === 'month' && (
-              /* Vue Mois : Heatmap Nothing OS façon GitHub */
+              /* Vue Mois : Heatmap façon GitHub */
               <MonthHeatmapView
                 selectedDate={selectedDate}
                 onSelectDate={setSelectedDate}
@@ -225,14 +227,14 @@ export function App() {
         )}
       </main>
 
-      {/* Barre de navigation flottante Nothing OS en bas */}
+      {/* Barre de navigation flottante en bas */}
       <BottomNav
         activeTab={navTab}
         onTabChange={setNavTab}
         onOpenStandby={() => setIsStandbyOpen(true)}
       />
 
-      {/* Mode Écran de veille / Standby Nothing OS */}
+      {/* Mode Écran de veille / Standby */}
       <StandbyMode
         isOpen={isStandbyOpen}
         onClose={() => setIsStandbyOpen(false)}
@@ -249,6 +251,43 @@ export function App() {
         selectedDate={selectedDate}
         entries={currentDayEntries}
         stats={daySummaryStats}
+      />
+
+      {/* Notch d'accès rapide incurvé (épouse le bord droit) */}
+      <button
+        onClick={() => setIsQuickAddOpen(true)}
+        title="Ajouter rapidement une activité"
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 w-[34px] h-[130px] cursor-pointer select-none drop-shadow-[-6px_6px_16px_rgba(0,0,0,0.35)]"
+      >
+        <svg
+          viewBox="0 0 34 130"
+          className="w-full h-full overflow-visible"
+        >
+          {/* Forme pleine noire épousant le bord droit */}
+          <path
+            d="M 34 0 C 34 22, 3 24, 3 44 L 3 86 C 3 106, 34 108, 34 130 L 34 0 Z"
+            fill="#000000"
+          />
+        </svg>
+
+        {/* Contenu centré sur la zone saillante */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pl-1.5 text-white pointer-events-none">
+          <Plus size={15} className="text-white" />
+          <span className="font-mono-tech text-[8px] font-bold uppercase [writing-mode:vertical-rl] tracking-widest text-zinc-300 mt-1">
+            AJOUT
+          </span>
+        </div>
+      </button>
+
+      {/* Modal d'ajout rapide (ouvert via le notch) */}
+      <QuickAddModal
+        isOpen={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+        topics={topics}
+        suggestedStartTime={suggestedStartTime}
+        suggestedEndTime={suggestedEndTime}
+        onAddEntry={handleAddEntry}
+        onAddTopic={addTopic}
       />
     </div>
   )

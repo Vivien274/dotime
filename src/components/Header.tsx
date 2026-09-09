@@ -49,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="w-full pt-4 pb-2 px-1">
-      {/* Top bar avec identité Nothing OS et status */}
+      {/* Top bar avec identité Timdot et status */}
       <div className="flex items-center justify-between mb-3 text-xs tracking-widest uppercase font-mono-tech font-bold text-zinc-900/80">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#181818] animate-pulse-dot" />

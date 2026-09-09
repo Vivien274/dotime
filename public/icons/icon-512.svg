@@ -10,7 +10,7 @@
     </filter>
   </defs>
 
-  <!-- Fond carré à coins arrondis Nothing OS -->
+  <!-- Fond carré à coins arrondis Timdot -->
   <rect width="512" height="512" rx="128" fill="url(#bg)" />
 
   <!-- Anneau central en verre / fond sombre -->

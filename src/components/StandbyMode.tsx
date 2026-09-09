@@ -87,7 +87,7 @@ export const StandbyMode: React.FC<StandbyModeProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-[#0a0a0a] text-white flex flex-col justify-between p-5 sm:p-8 select-none overflow-y-auto animate-fade-in">
-      {/* Barre supérieure Nothing OS */}
+      {/* Barre supérieure Timdot */}
       <div className="flex items-center justify-between w-full max-w-3xl mx-auto text-zinc-500 font-mono-tech text-xs tracking-widest uppercase">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#FF9028] animate-pulse" />
@@ -120,7 +120,7 @@ export const StandbyMode: React.FC<StandbyModeProps> = ({
           {dayName} · {dateFormatted}
         </div>
 
-        {/* Horloge géante Dot-Matrix Nothing OS */}
+        {/* Horloge géante Dot-Matrix Timdot */}
         <div className="flex items-baseline justify-center font-dot font-bold tracking-tight text-white select-none">
           <span className="text-6xl sm:text-7xl md:text-8xl leading-none">
             {hoursStr}

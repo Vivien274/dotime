@@ -15,8 +15,6 @@ export const Day24Matrix: React.FC<Day24MatrixProps> = ({
   selectedHour,
 }) => {
   const loggedCount = slots.filter((s) => s.isFilled).length
-  const activeCount = slots.filter((s) => s.isFilled && !s.isNight).length
-  const nightCount = slots.filter((s) => s.isFilled && s.isNight).length
 
   const handleSlotClick = (slot: HourSlot) => {
     onSelectHour(slot.hour)
@@ -41,7 +39,7 @@ export const Day24Matrix: React.FC<Day24MatrixProps> = ({
 
   return (
     <div className="rounded-3xl bg-white/20 backdrop-blur-xl border border-white/30 shadow-lg p-5">
-      {/* En-tête minimaliste Nothing OS */}
+      {/* En-tête minimaliste Timdot */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-[#181818]" />
@@ -163,25 +161,6 @@ export const Day24Matrix: React.FC<Day24MatrixProps> = ({
             )
           })}
         </div>
-      </div>
-
-      {/* Légende discrète Nothing OS */}
-      <div className="flex items-center justify-between text-[10px] font-mono-tech text-zinc-700/80 mt-2 pt-2 border-t border-black/5 px-0.5">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-white border border-black/10 shadow-xs" />
-            <span>Actif ({activeCount}h)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-black/15 flex items-center justify-center border border-black/10">
-              <span className="w-1 h-1 rounded-full bg-white" />
-            </span>
-            <span>Nuit ({nightCount}h)</span>
-          </div>
-        </div>
-        <span className="font-dot text-[11px] text-[#181818] font-bold">
-          {loggedCount}/24H
-        </span>
       </div>
     </div>
   )

@@ -60,7 +60,6 @@ export const PRELOADED_TOPICS: PreloadedTopic[] = [
 
 
   // --- ENTREPRISES ---
-  { id: 'ent_tablo', name: 'Modifications de Tablo', type: 'entreprises', icon: 'Globe' },
   { id: 'ent_projet', name: 'Gestion de projet', type: 'entreprises', icon: 'Layout' },
   { id: 'ent_facturation', name: 'Facturation & Devis', type: 'entreprises', icon: 'Briefcase' },
   { id: 'ent_prospection', name: 'Prospection', type: 'entreprises', icon: 'Zap' },

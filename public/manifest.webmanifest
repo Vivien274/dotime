@@ -1,7 +1,7 @@
 {
   "name": "Timdot — 24H Time Tracker",
   "short_name": "Timdot",
-  "description": "Application de time-tracking rétro-futuriste par grille de points Nothing OS",
+  "description": "Application de suivi du temps minimaliste par matrice de points 24H et minuteur Pomodoro",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

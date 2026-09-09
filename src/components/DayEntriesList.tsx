@@ -117,7 +117,7 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
         )}
       </div>
 
-      {/* Camembert / Donut ultra-moderne Nothing OS pour la RÉPARTITION DU TEMPS */}
+      {/* Camembert / Donut ultra-moderne Timdot pour la RÉPARTITION DU TEMPS */}
       <ModernTimeDonut stats={stats} entries={entries} />
 
       {/* Modal d'édition d'activité */}

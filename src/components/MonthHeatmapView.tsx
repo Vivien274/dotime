@@ -156,7 +156,7 @@ export const MonthHeatmapView: React.FC<MonthHeatmapViewProps> = ({
           <span>Moyenne active : <strong className="font-dot text-sm text-[#181818]">{avgHoursPerActiveDay}h / j</strong></span>
         </div>
 
-        {/* Grille Heatmap Nothing OS en points */}
+        {/* Grille Heatmap Timdot en points */}
         <div className="pt-4">
           {/* En-têtes des jours de semaine */}
           <div className="grid grid-cols-7 gap-1 text-center mb-2">
@@ -214,7 +214,7 @@ export const MonthHeatmapView: React.FC<MonthHeatmapViewProps> = ({
             })}
           </div>
 
-          {/* Légende d'intensité Nothing OS */}
+          {/* Légende d'intensité Timdot */}
           <div className="flex items-center justify-between text-[9px] font-mono-tech text-zinc-600 mt-4 pt-3 border-t border-black/10 px-1">
             <span className="uppercase tracking-wider">Intensité active :</span>
             <div className="flex items-center gap-1.5">

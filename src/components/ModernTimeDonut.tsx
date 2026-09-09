@@ -121,7 +121,7 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats, entries
           </h3>
         </div>
 
-        {/* Boutons de bascule de plage Nothing OS */}
+        {/* Boutons de bascule de plage Timdot */}
         <div className="flex items-center p-0.5 rounded-full bg-black/10 border border-black/5">
           <button
             type="button"
@@ -150,7 +150,7 @@ export const ModernTimeDonut: React.FC<ModernTimeDonutProps> = ({ stats, entries
 
       {/* Disposition : Camembert Donut + Répartition détaillée */}
       <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-6 py-1">
-        {/* Donut Chart SVG Ultra-Moderne Nothing OS */}
+        {/* Donut Chart SVG Ultra-Moderne Timdot */}
         <div className="relative shrink-0 flex items-center justify-center">
           <svg
             width="148"

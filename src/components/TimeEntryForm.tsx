@@ -267,7 +267,7 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
               setCustomTitle(e.target.value)
               setSelectedTopicName(e.target.value)
             }}
-            placeholder="Ex : Réunion d'équipe, Modifications de Tablo..."
+            placeholder="Ex : Réunion d'équipe, Dev & Tests..."
             className="w-full px-4 py-2.5 rounded-2xl bg-white/50 border border-black/10 text-zinc-900 placeholder-zinc-500/70 focus:outline-none focus:ring-2 focus:ring-[#181818] text-sm font-sans font-medium"
           />
         </div>
@@ -285,7 +285,7 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
                 required
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white/80 border border-black/10 text-[#181818] font-dot text-sm focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-base shadow-xs tracking-wider focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
 
@@ -310,7 +310,7 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
                 required
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white/80 border border-black/10 text-[#181818] font-dot text-sm focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-base shadow-xs tracking-wider focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
           </div>
@@ -360,7 +360,7 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
         </div>
 
 
-        {/* 5. Bouton de validation Nothing OS */}
+        {/* 5. Bouton de validation Timdot */}
         <button
           type="submit"
           disabled={!customTitle.trim()}

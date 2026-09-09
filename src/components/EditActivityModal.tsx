@@ -167,7 +167,7 @@ export const EditActivityModal: React.FC<EditActivityModalProps> = ({
                 required
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white/70 border border-black/10 text-[#181818] font-dot text-sm focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-base shadow-xs tracking-wider focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
             <div>
@@ -179,7 +179,7 @@ export const EditActivityModal: React.FC<EditActivityModalProps> = ({
                 required
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white/70 border border-black/10 text-[#181818] font-dot text-sm focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-base shadow-xs tracking-wider focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
           </div>

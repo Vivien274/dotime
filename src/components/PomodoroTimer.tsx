@@ -33,7 +33,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, pomodoro }
     requestNotificationPermission,
   } = pomodoro
 
-  // Anneau de 36 points Nothing OS
+  // Anneau de 36 points Timdot
   const progressPercent = (totalSeconds - timeLeft) / Math.max(1, totalSeconds)
   const DOTS_COUNT = 36
   const activeDotsCount = Math.round((1 - progressPercent) * DOTS_COUNT)
@@ -103,7 +103,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ topics, pomodoro }
           })}
         </div>
 
-        {/* Anneau circulaire de points Nothing OS + Grand chrono */}
+        {/* Anneau circulaire de points Timdot + Grand chrono */}
         <div className="relative w-[260px] h-[260px] mx-auto flex items-center justify-center">
           <svg width="260" height="260" viewBox="0 0 260 260" className="drop-shadow-sm">
             {dots.map((dot) => (
