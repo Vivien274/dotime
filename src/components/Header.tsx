@@ -1,5 +1,31 @@
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Monitor, Sun, Moon, Share2 } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Monitor, Sun, Moon, Share2, Volume2, VolumeX } from 'lucide-react'
 import { getFormattedDateKey } from '../constants/initialData'
+import { isSoundEnabled, setSoundEnabled, playMechanicalClick } from '../utils/soundEffects'
+
+const SoundToggleButton: React.FC = () => {
+  const [enabled, setEnabled] = useState(() => isSoundEnabled())
+
+  const handleToggle = () => {
+    const next = !enabled
+    setEnabled(next)
+    setSoundEnabled(next)
+    if (next) {
+      playMechanicalClick()
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleToggle}
+      title={enabled ? 'Couper les sons mécaniques' : 'Activer les sons mécaniques'}
+      className="p-1.5 rounded-full bg-white/25 hover:bg-[#181818] hover:text-white border border-black/10 text-zinc-800 transition-all cursor-pointer"
+    >
+      {enabled ? <Volume2 size={11} /> : <VolumeX size={11} className="text-zinc-500" />}
+    </button>
+  )
+}
 
 interface HeaderProps {
   selectedDate: string
@@ -75,6 +101,9 @@ export const Header: React.FC<HeaderProps> = ({
               {theme === 'dark' ? <Sun size={11} className="text-[#FF9028]" /> : <Moon size={11} />}
             </button>
           )}
+
+          {/* Bouton activation / coupure son rétro */}
+          <SoundToggleButton />
 
           {onOpenStandby && (
             <button

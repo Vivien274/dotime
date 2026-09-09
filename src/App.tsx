@@ -15,10 +15,12 @@ import { PomodoroTimer } from './components/PomodoroTimer'
 import type { ActivityType } from './types'
 import confetti from 'canvas-confetti'
 import { Clock, Calendar, LayoutGrid, Plus } from 'lucide-react'
+import { playSuccessChime } from './utils/soundEffects'
 
 export function App() {
   const [selectedHour, setSelectedHour] = useState<number | null>(null)
   const [prefilledRange, setPrefilledRange] = useState<{ startTime: string; endTime: string } | null>(null)
+  const [highlightedEntryId, setHighlightedEntryId] = useState<string | null>(null)
   const [navTab, setNavTab] = useState<NavTab>('tracker')
   const [currentView, setCurrentView] = useState<'day' | 'week' | 'month'>('day')
   const [isStandbyOpen, setIsStandbyOpen] = useState(false)
@@ -83,6 +85,7 @@ export function App() {
     addEntry(entryData)
     setSelectedHour(null)
     setPrefilledRange(null)
+    playSuccessChime()
     confetti({
       particleCount: 35,
       spread: 50,
@@ -169,11 +172,21 @@ export function App() {
             {/* Affichage conditionnel selon la sous-vue */}
             {currentView === 'day' && (
               <>
-                {/* Grille de 24 points purs représentant les 24 heures de la journée */}
+                {/* Matrice 24 heures avec sous-créneaux de 30 minutes */}
                 <Day24Matrix
                   slots={day24Hours}
+                  entries={currentDayEntries}
+                  selectedDate={selectedDate}
+                  highlightedEntryId={highlightedEntryId}
                   onSelectHour={handleSelectHour}
                   onSelectHole={handleSelectHole}
+                  onSelectSlot={handleSelectHole}
+                  onSelectEntry={(entry) => {
+                    setHighlightedEntryId(entry.id)
+                    setTimeout(() => {
+                      setHighlightedEntryId((curr) => (curr === entry.id ? null : curr))
+                    }, 3000)
+                  }}
                   selectedHour={selectedHour}
                 />
 
@@ -193,6 +206,9 @@ export function App() {
                   entries={currentDayEntries}
                   onDeleteEntry={deleteEntry}
                   onUpdateEntry={updateEntry}
+                  onSelectHole={handleSelectHole}
+                  highlightedEntryId={highlightedEntryId}
+                  onHoverEntry={(id) => setHighlightedEntryId(id)}
                   stats={daySummaryStats}
                 />
               </>
