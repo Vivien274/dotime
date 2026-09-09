@@ -23,7 +23,7 @@ export const Day24Matrix: React.FC<Day24MatrixProps> = ({
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-[#181818]" />
           <h2 className="font-mono-tech text-xs tracking-wider uppercase font-bold text-zinc-900/80">
-            24-HOUR MATRIX
+            MATRICE 24 HEURES
           </h2>
         </div>
         <span className="font-dot text-xs text-[#181818] font-bold">

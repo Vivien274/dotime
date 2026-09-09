@@ -91,7 +91,7 @@ export const StandbyMode: React.FC<StandbyModeProps> = ({
       <div className="flex items-center justify-between w-full max-w-3xl mx-auto text-zinc-500 font-mono-tech text-xs tracking-widest uppercase">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#FF9028] animate-pulse" />
-          <span className="font-dot text-white text-xs tracking-wider">STANDBY</span>
+          <span className="font-dot text-white text-xs tracking-wider">MODE VEILLE</span>
         </div>
 
         <div className="flex items-center gap-2">

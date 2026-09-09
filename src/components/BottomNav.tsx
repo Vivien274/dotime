@@ -27,7 +27,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           }`}
         >
           <Calendar size={14} className={activeTab === 'tracker' ? 'text-[#181818]' : 'text-zinc-400'} />
-          <span>TRACKER</span>
+          <span>SUIVI</span>
         </button>
 
         {/* Onglet Pomodoro */}
@@ -46,7 +46,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         {/* Déclencheur Standby */}
         <button
           onClick={onOpenStandby}
-          title="Mode Écran de veille (Standby)"
+          title="Mode Écran de veille"
           className="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
         >
           <Monitor size={15} />

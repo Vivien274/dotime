@@ -22,8 +22,8 @@ export const Header: React.FC<HeaderProps> = ({
   const isToday = selectedDate === todayKey
 
   const dayNumber = dateObj.getDate().toString().padStart(2, '0')
-  const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
-  const monthName = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+  const dayName = dateObj.toLocaleDateString('fr-FR', { weekday: 'long' }).toUpperCase()
+  const monthName = dateObj.toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase()
   const year = dateObj.getFullYear()
 
   const handlePrevDay = () => {
@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/25 hover:bg-[#181818] hover:text-white border border-black/10 text-[10px] transition-all cursor-pointer"
             >
               <Monitor size={10} />
-              <span>STANDBY</span>
+              <span>VEILLE</span>
             </button>
           )}
           {!isToday && (
@@ -66,11 +66,11 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={handleToday}
               className="px-2.5 py-0.5 rounded-full bg-[#181818] text-white text-[10px] tracking-wider hover:bg-black transition-colors"
             >
-              TODAY
+              AUJOURD'HUI
             </button>
           )}
           <span className="px-2 py-0.5 rounded-full bg-white/25 border border-black/10 text-[10px]">
-            {isToday ? 'LIVE' : 'LOGGED'}
+            {isToday ? 'EN DIRECT' : 'ARCHIVÉ'}
           </span>
         </div>
       </div>
@@ -88,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
               {dayNumber}
             </h1>
             <div className="font-mono-tech text-xs tracking-widest uppercase text-zinc-900/70 pb-0.5 flex flex-col justify-end">
-              <span className="text-[10px] text-zinc-900/70 font-bold leading-tight">DAY CYCLE</span>
+              <span className="text-[10px] text-zinc-900/70 font-bold leading-tight">CYCLE DU JOUR</span>
               <div className="font-dot text-sm text-[#181818] font-bold leading-none mt-1">
                 {totalHours}H / 24H
               </div>
