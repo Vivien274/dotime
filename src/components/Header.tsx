@@ -155,8 +155,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Droite : Bloub géant réactif Nothing OS aligné à droite qui dépasse un peu de l'écran */}
-        <div className="shrink-0 flex items-center justify-end -mr-10 sm:-mr-14">
+        {/* Droite : Bloub géant */}
+        <div className="shrink-0 flex items-center justify-center">
           <BloubAvatar
             state={bloubMood?.state ?? 'idle'}
             theme={theme}
