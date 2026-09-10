@@ -285,7 +285,7 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
                 required
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full max-w-full min-w-0 px-2 sm:px-3 py-2 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-28 max-w-full min-w-0 px-2 sm:px-2.5 py-1.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
 
@@ -310,10 +310,11 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
                 required
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full max-w-full min-w-0 px-2 sm:px-3 py-2 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-28 max-w-full min-w-0 px-2 sm:px-2.5 py-1.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
           </div>
+
 
 
           {/* Raccourcis de durée adaptés (Sommeil vs Standard) */}
