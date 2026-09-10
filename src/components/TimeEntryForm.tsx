@@ -128,19 +128,29 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
     const finalTitle = customTitle.trim() || selectedTopicName
     if (!finalTitle) return
 
+    let finalEndTime = endTime
+    if (startTime === endTime) {
+      const [h, m] = startTime.split(':').map(Number)
+      const nextMin = (m + 30) % 60
+      const nextHour = (h + Math.floor((m + 30) / 60)) % 24
+      finalEndTime = `${nextHour.toString().padStart(2, '0')}:${nextMin.toString().padStart(2, '0')}`
+      setEndTime(finalEndTime)
+    }
+
     onAddEntry({
       title: finalTitle,
       type: activeType,
       startTime,
-      endTime,
+      endTime: finalEndTime,
     })
 
     // Après l'enregistrement, la prochaine heure de début devient la fin précédente
-    setStartTime(endTime)
-    const [endH] = endTime.split(':').map(Number)
+    setStartTime(finalEndTime)
+    const [endH] = finalEndTime.split(':').map(Number)
     const nextH = (endH + 1) % 24
     setEndTime(`${nextH.toString().padStart(2, '0')}:00`)
   }
+
 
   return (
     <div className="rounded-3xl bg-white/25 backdrop-blur-xl border border-white/40 shadow-xl p-5">

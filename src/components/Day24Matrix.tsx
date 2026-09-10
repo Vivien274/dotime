@@ -96,7 +96,8 @@ export function compute48HalfHourSlots(
       const eStart = timeToMinutes(entry.startTime)
       let eEnd = timeToMinutes(entry.endTime)
 
-      if (entry.endTime === '00:00' || eEnd === 0) {
+      // Seul un horaire de fin à 00:00 (minuit de fin de journée) vaut 1440 min
+      if (entry.endTime === '00:00' && entry.startTime !== '00:00') {
         eEnd = 1440
       }
 
@@ -105,8 +106,15 @@ export function compute48HalfHourSlots(
           matchingEntry = entry
           break
         }
-      } else {
+      } else if (eStart > eEnd) {
+        // Traversée de minuit (ex: 23:00 -> 07:00)
         if (slotStartMin >= eStart || slotEndMin <= eEnd) {
+          matchingEntry = entry
+          break
+        }
+      } else {
+        // eStart === eEnd (durée 0 ou même heure) : ne doit JAMAIS allumer toute la journée
+        if (slotStartMin <= eStart && slotEndMin > eStart) {
           matchingEntry = entry
           break
         }

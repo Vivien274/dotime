@@ -167,3 +167,11 @@ export const importBatch = mutation({
     return insertedIds;
   },
 });
+
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("entries").collect();
+  },
+});
+
