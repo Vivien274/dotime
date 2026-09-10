@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Monitor, Sun, Moon, Share2, Volume2, VolumeX } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Monitor, Sun, Moon, RefreshCw, Volume2, VolumeX } from 'lucide-react'
 import { getFormattedDateKey } from '../constants/initialData'
 import { isSoundEnabled, setSoundEnabled, playMechanicalClick } from '../utils/soundEffects'
 
@@ -36,6 +36,7 @@ interface HeaderProps {
   theme?: 'light' | 'dark'
   onToggleTheme?: () => void
   onOpenExport?: () => void
+  onRefresh?: () => void
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -45,8 +46,10 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenStandby,
   theme = 'light',
   onToggleTheme,
-  onOpenExport,
+  onRefresh,
 }) => {
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
   // Parser la date sélectionnée
   const dateObj = new Date(selectedDate + 'T12:00:00')
   const todayKey = getFormattedDateKey()
@@ -56,6 +59,17 @@ export const Header: React.FC<HeaderProps> = ({
   const dayName = dateObj.toLocaleDateString('fr-FR', { weekday: 'long' }).toUpperCase()
   const monthName = dateObj.toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase()
   const year = dateObj.getFullYear()
+
+  const handleRefresh = () => {
+    playMechanicalClick()
+    setIsRefreshing(true)
+    setTimeout(() => setIsRefreshing(false), 500)
+    if (onRefresh) {
+      onRefresh()
+    } else {
+      onDateChange(todayKey)
+    }
+  }
 
   const handlePrevDay = () => {
     const prev = new Date(dateObj)
@@ -75,22 +89,22 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="w-full pt-4 pb-2 px-1">
-      {/* Top bar avec identité Timdot et status */}
+      {/* Top bar avec identité Timdot et actions */}
       <div className="flex items-center justify-between mb-3 text-xs tracking-widest uppercase font-mono-tech font-bold text-zinc-900/80">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#181818] animate-pulse-dot" />
           <span className="font-dot text-[11px] tracking-wider text-[#181818]">TIMDOT (24H)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          {onOpenExport && (
-            <button
-              onClick={onOpenExport}
-              title="Exporter le bilan du jour"
-              className="p-1.5 rounded-full bg-white/25 hover:bg-[#181818] hover:text-white border border-black/10 text-zinc-800 transition-all cursor-pointer"
-            >
-              <Share2 size={11} />
-            </button>
-          )}
+          {/* Bouton Actualiser */}
+          <button
+            type="button"
+            onClick={handleRefresh}
+            title="Actualiser sur aujourd'hui"
+            className="p-1.5 rounded-full bg-white/25 hover:bg-[#181818] hover:text-white border border-black/10 text-zinc-800 transition-all cursor-pointer"
+          >
+            <RefreshCw size={11} className={isRefreshing ? 'animate-spin' : ''} />
+          </button>
 
           {onToggleTheme && (
             <button
@@ -115,6 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span>VEILLE</span>
             </button>
           )}
+
           {!isToday && (
             <button
               onClick={handleToday}
@@ -123,11 +138,9 @@ export const Header: React.FC<HeaderProps> = ({
               AUJOURD'HUI
             </button>
           )}
-          <span className="px-2 py-0.5 rounded-full bg-white/25 border border-black/10 text-[10px]">
-            {isToday ? 'EN DIRECT' : 'ARCHIVÉ'}
-          </span>
         </div>
       </div>
+
 
       {/* Date Header avec Grand numéro Dot-Matrix agrandi et aligné en bas avec l'horaire */}
       <div className="flex items-end justify-between border-b border-black/10 pb-4">

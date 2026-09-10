@@ -57,6 +57,7 @@ export function App() {
     topics,
     selectedDate,
     setSelectedDate,
+    refreshToToday,
     currentDayEntries,
     day24Hours,
     suggestedStartTime,
@@ -116,7 +117,7 @@ export function App() {
     >
       {/* Conteneur Mobile First épuré */}
       <main className="w-full max-w-md mx-auto flex flex-col space-y-4">
-        {/* Header avec Grand numéro Dot-Matrix, boutons Veille, Thème et Export */}
+        {/* Header avec Grand numéro Dot-Matrix, boutons Veille, Thème et Refresh */}
         <Header
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
@@ -124,8 +125,9 @@ export function App() {
           onOpenStandby={() => setIsStandbyOpen(true)}
           theme={theme}
           onToggleTheme={handleToggleTheme}
-          onOpenExport={() => setIsExportOpen(true)}
+          onRefresh={refreshToToday}
         />
+
 
         {/* 1. Onglet SUIVI (Jour / Semaine / Mois) */}
         {navTab === 'tracker' && (

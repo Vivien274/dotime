@@ -398,10 +398,18 @@ export function useTimeTracker() {
     }
   }, [currentDayEntries, day24Hours])
 
+  const refreshToToday = useCallback(() => {
+    const today = getFormattedDateKey()
+    setLiveToday(today)
+    setCurrentHourNow(new Date().getHours())
+    setSelectedDate(today)
+  }, [])
+
   return {
     topics,
     selectedDate,
     setSelectedDate,
+    refreshToToday,
     currentDayEntries,
     day24Hours,
     suggestedStartTime,
@@ -414,3 +422,4 @@ export function useTimeTracker() {
     daySummaryStats,
   }
 }
+
