@@ -14,7 +14,13 @@ interface BloubAvatarProps {
   statusLabel?: string
   statusEmoji?: string
   statusDetail?: string
+  energyPercent?: number
+  isDizzy?: boolean
+  isSleeping?: boolean
+  isFocusing?: boolean
+  isCosmic?: boolean
   onClick?: () => void
+  onSwipe?: (direction: 'left' | 'right') => void
   followCursor?: boolean
   showTooltip?: boolean
   className?: string
@@ -22,18 +28,24 @@ interface BloubAvatarProps {
 
 export const BloubAvatar: React.FC<BloubAvatarProps> = ({
   state = 'idle',
-  size = 160,
+  size = 218,
   theme = 'light',
   statusLabel,
   statusEmoji,
   statusDetail,
+  energyPercent = 50,
+  isDizzy = false,
+  isSleeping = false,
+  isFocusing = false,
   onClick,
+  onSwipe,
   followCursor = false,
   showTooltip = true,
   className = '',
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null)
   const engineRef = useRef<BotEngine | null>(null)
+  const touchStartRef = useRef<number | null>(null)
   const uid = useId().replace(/:/g, '-')
   const maskId = `bloub-mask-${uid}`
 
@@ -41,7 +53,7 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
   const ink = isDark ? '#f4f4f5' : '#181818'
   const paper = isDark ? '#0c0c0c' : '#ffffff'
 
-  // État de la frame rendue
+  // État de la frame rendue (toujours cercle)
   const [frame, setFrame] = useState<BotFrame>(() => {
     const eng = new BotEngine(RAYON, state)
     engineRef.current = eng
@@ -61,12 +73,12 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
       currentStateRef.current = state
       engineRef.current.setState(state, performance.now() / 1000)
       setShowRecentFeedback(true)
-      const t = setTimeout(() => setShowRecentFeedback(false), 2600)
+      const t = setTimeout(() => setShowRecentFeedback(false), 3200)
       return () => clearTimeout(t)
     }
   }, [state])
 
-  // Boucle d'animation à 60 FPS
+  // Boucle d'animation à 60 FPS avec regard autonome
   useEffect(() => {
     let rafId = 0
     let lastTime = 0
@@ -74,6 +86,7 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
     let aiming = false
     let turnSince = 0
     let pointerPos: { x: number; y: number } | null = null
+    let nextGazeShift = 0
 
     const onPointerMove = (e: PointerEvent) => {
       if (e.pointerType === 'touch') return
@@ -88,8 +101,6 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
       window.addEventListener('pointermove', onPointerMove, { passive: true })
       document.addEventListener('pointerleave', onPointerLeave)
     }
-
-    let nextGazeShift = 0
 
     const loop = (ms: number) => {
       rafId = requestAnimationFrame(loop)
@@ -130,7 +141,6 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
           const shiftInterval = 3.5 + Math.random() * 2.5
           nextGazeShift = clock + shiftInterval
 
-          // Cibles de regard orientées vers la page et l'utilisateur
           const targets = [
             { yaw: -20, pitch: -8 },   // Regarde la timeline et les activités
             { yaw: -28, pitch: 4 },    // Regarde le numéro du jour à gauche
@@ -146,10 +156,10 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
               pitch: chosen.pitch,
               mix: 1,
               spin: 0,
-              wander: 1, // Conserve la micro-dérive naturelle vivante
+              wander: 1, // Conserve la micro-dérive vivante
             },
             clock,
-            0.65 // Transition fluide
+            0.65
           )
           aiming = true
         }
@@ -174,44 +184,88 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
 
   const isBubbleVisible = isHovered || showRecentFeedback
 
+  // Détection du swipe tactile horizontal
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      touchStartRef.current = e.touches[0].clientX
+    }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartRef.current !== null && e.changedTouches.length > 0) {
+      const deltaX = e.changedTouches[0].clientX - touchStartRef.current
+      touchStartRef.current = null
+      if (Math.abs(deltaX) > 40) {
+        setShowRecentFeedback(true)
+        if (onSwipe) {
+          onSwipe(deltaX > 0 ? 'right' : 'left')
+        }
+      }
+    }
+  }
+
   return (
     <div
       className={`relative inline-flex items-center justify-center select-none group ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Bulle d'expression réactive Nothing OS */}
+      {/* Bulle d'expression réactive Nothing OS avec jauge d'énergie */}
       {showTooltip && statusLabel && (
         <div
-          className={`absolute bottom-full mb-1.5 right-0 pointer-events-none transition-all duration-300 z-50 whitespace-nowrap ${
+          className={`absolute bottom-full mb-2 right-0 pointer-events-none transition-all duration-300 z-50 whitespace-nowrap max-w-[280px] sm:max-w-xs ${
             isBubbleVisible
               ? 'opacity-100 translate-y-0 scale-100'
-              : 'opacity-0 translate-y-1.5 scale-95'
+              : 'opacity-0 translate-y-2 scale-95'
           }`}
         >
-          <div className="px-2.5 py-1 rounded-full bg-[#181818] text-white shadow-xl border border-white/20 text-[10px] font-mono-tech font-bold tracking-wide flex items-center gap-1.5 backdrop-blur-md">
-            {statusEmoji && <span className="text-xs">{statusEmoji}</span>}
-            <span className="uppercase text-[10px]">{statusLabel}</span>
-            {statusDetail && (
-              <span className="text-[9px] text-zinc-400 font-normal border-l border-white/20 pl-1.5 hidden sm:inline">
-                {statusDetail}
+          <div className="px-3.5 py-2 rounded-2xl bg-[#181818] text-white shadow-2xl border border-white/20 text-xs font-mono-tech font-bold tracking-wide backdrop-blur-xl flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5">
+              {statusEmoji && <span className="text-sm shrink-0">{statusEmoji}</span>}
+              <span className="uppercase text-[11px] leading-tight font-extrabold text-white">
+                {statusLabel}
               </span>
+            </div>
+
+            {statusDetail && (
+              <div className="text-[10px] text-zinc-400 font-normal leading-tight">
+                {statusDetail}
+              </div>
             )}
+
+            {/* Mini jauge d'énergie Nothing OS à points */}
+            <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/10 text-[9px] text-zinc-400 font-mono-tech">
+              <span className="uppercase tracking-widest text-[8px] font-bold">VITALITÉ</span>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                      (energyPercent / 100) * 6 > i ? 'bg-[#FFA43B]' : 'bg-white/15'
+                    }`}
+                  />
+                ))}
+                <span className="text-[#FFA43B] font-bold ml-1">{energyPercent}%</span>
+              </div>
+            </div>
           </div>
+
           {/* Petite flèche */}
-          <div className="w-2 h-2 bg-[#181818] border-r border-b border-white/20 rotate-45 mx-auto -mt-1 mr-4" />
+          <div className="w-2.5 h-2.5 bg-[#181818] border-r border-b border-white/20 rotate-45 mx-auto -mt-1.5 mr-8" />
         </div>
       )}
 
-      {/* Tête SVG Bloub */}
+      {/* Tête SVG Bloub tactile */}
       <button
         type="button"
         onClick={() => {
           setShowRecentFeedback(true)
           if (onClick) onClick()
         }}
-        title={statusLabel || 'Bloub, avatar réactif'}
-        className="relative cursor-pointer transition-transform duration-200 active:scale-90 hover:scale-105 outline-none focus:ring-2 focus:ring-black/20 rounded-full"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        title={statusLabel || 'Bloub, compagnon réactif'}
+        className="relative cursor-pointer transition-transform duration-200 active:scale-95 hover:scale-[1.02] outline-none rounded-full"
         style={{ width: size, height: size }}
       >
         <svg
@@ -221,7 +275,7 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
           viewBox={`${-VB} ${-VB} ${VB * 2} ${VB * 2}`}
           role="img"
           aria-label="Bloub avatar animé"
-          className="overflow-visible"
+          className="overflow-visible w-full h-full"
         >
           <defs>
             {/* Masque pour percer les yeux dans la silhouette du corps */}
@@ -288,7 +342,7 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
             ))}
           </g>
 
-          {/* Particules derrière le corps (état burst) */}
+          {/* Particules derrière le corps */}
           {frame.dotsBehind && (
             <g>
               {frame.dots.map((dot, i) => {
@@ -317,13 +371,83 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
 
           {/* Corps et yeux */}
           <g opacity={frame.bodyAlpha}>
-            {/* Fond des yeux percé */}
+            {/* Fond blanc percé des yeux */}
             <path d={frame.bodyPath} fill={paper} />
             {/* Corps encré avec masque des yeux */}
             <g mask={`url(#${maskId})`}>
               <rect x={-VB} y={-VB} width={VB * 2} height={VB * 2} fill={ink} />
             </g>
           </g>
+
+          {/* Accessoire 1 : Zzz flottants en mode nuit */}
+          {(isSleeping || state === 'sleep') && (
+            <g style={{ pointerEvents: 'none' }}>
+              <text
+                x="65"
+                y="-60"
+                fill={ink}
+                fontSize="22"
+                fontFamily="Space Mono, monospace"
+                fontWeight="bold"
+                opacity="0.9"
+              >
+                Z
+              </text>
+              <text
+                x="88"
+                y="-85"
+                fill={ink}
+                fontSize="17"
+                fontFamily="Space Mono, monospace"
+                fontWeight="bold"
+                opacity="0.65"
+              >
+                z
+              </text>
+              <text
+                x="105"
+                y="-105"
+                fill={ink}
+                fontSize="13"
+                fontFamily="Space Mono, monospace"
+                fontWeight="bold"
+                opacity="0.4"
+              >
+                z
+              </text>
+            </g>
+          )}
+
+          {/* Accessoire 2 : LED rouge Glyph clignotante en mode Focus / Pomodoro */}
+          {(isFocusing || state === 'thinking') && (
+            <g style={{ pointerEvents: 'none' }}>
+              <circle cx="85" cy="-80" r="10" fill="#d71921" opacity="0.3" className="animate-ping" />
+              <circle cx="85" cy="-80" r="5" fill="#d71921" />
+              <text
+                x="68"
+                y="-62"
+                fill="#d71921"
+                fontSize="9"
+                fontFamily="Space Mono, monospace"
+                fontWeight="bold"
+                letterSpacing="1"
+              >
+                ● REC
+              </text>
+            </g>
+          )}
+
+          {/* Accessoire 3 : Étoiles d'étourdissement en cas de spam de taps */}
+          {isDizzy && (
+            <g style={{ pointerEvents: 'none' }}>
+              <text x="-40" y="-85" fontSize="20">
+                💫
+              </text>
+              <text x="25" y="-95" fontSize="20">
+                🌀
+              </text>
+            </g>
+          )}
 
           {/* Particules devant le corps */}
           {!frame.dotsBehind && (

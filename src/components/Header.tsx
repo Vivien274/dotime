@@ -40,6 +40,7 @@ interface HeaderProps {
   onOpenExport?: () => void
   bloubMood?: BloubMood
   onBloubClick?: () => void
+  onBloubSwipe?: (direction: 'left' | 'right') => void
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -51,6 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTheme,
   bloubMood,
   onBloubClick,
+  onBloubSwipe,
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -153,16 +155,22 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Droite : Bloub géant réactif Nothing OS (3x agrandi, tactile/autonome) */}
+        {/* Droite : Bloub géant réactif Nothing OS (218px, +30%, 100% cercle, tactile & vivant) */}
         <div className="shrink-0 flex items-center justify-center">
           <BloubAvatar
             state={bloubMood?.state ?? 'idle'}
             theme={theme}
-            size={168}
+            size={218}
             statusLabel={bloubMood?.label}
             statusEmoji={bloubMood?.emoji}
             statusDetail={bloubMood?.detail}
+            energyPercent={bloubMood?.energyPercent}
+            isDizzy={bloubMood?.isDizzy}
+            isSleeping={bloubMood?.isSleeping}
+            isFocusing={bloubMood?.isFocusing}
+            isCosmic={bloubMood?.isCosmic}
             onClick={onBloubClick}
+            onSwipe={onBloubSwipe}
             followCursor={false}
           />
         </div>

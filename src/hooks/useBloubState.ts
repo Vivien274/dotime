@@ -1,8 +1,15 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import type { TimeEntry } from '../types'
 import type { StateId } from '../bot/states'
 import { getFormattedDateKey, isNightActivity } from '../constants/initialData'
-import { playMechanicalClick, playSuccessChime } from '../utils/soundEffects'
+import {
+  playMechanicalClick,
+  playSuccessChime,
+  playBloubChirp,
+  playBloubDizzy,
+  playBloubSpin,
+} from '../utils/soundEffects'
+import confetti from 'canvas-confetti'
 
 interface UseBloubStateProps {
   entries: TimeEntry[]
@@ -17,6 +24,11 @@ export interface BloubMood {
   label: string
   emoji: string
   detail?: string
+  energyPercent: number
+  isDizzy?: boolean
+  isSleeping?: boolean
+  isFocusing?: boolean
+  isCosmic?: boolean
 }
 
 function timeToMinutes(timeStr: string): number {
@@ -24,6 +36,19 @@ function timeToMinutes(timeStr: string): number {
   const [h, m] = timeStr.split(':').map(Number)
   return (h || 0) * 60 + (m || 0)
 }
+
+const WITTY_PUNCHLINES = [
+  { label: 'Je garde un œil sur ton temps...', emoji: '👀', detail: 'Rien ne m’échappe !' },
+  { label: 'Tu gères la fougère 🌱', emoji: '✨', detail: 'Continue comme ça' },
+  { label: 'Chaque minute compte !', emoji: '⏱️', detail: 'Le temps, c’est de l’art' },
+  { label: 'Productivité 100% pur beurre', emoji: '🧈', detail: 'Tout en fluidité' },
+  { label: 'T’as prévu quoi de beau après ?', emoji: '🤔', detail: 'La journée avance vite' },
+  { label: 'Allez, encore un petit créneau !', emoji: '⚡', detail: 'L’objectif approche' },
+  { label: 'Je cligne des yeux mais je vois tout', emoji: '😉', detail: 'Mode observateur' },
+  { label: 'Tu veux une médaille ? 🥇', emoji: '🏆', detail: 'Bien méritée !' },
+  { label: 'Toujours là pour toi !', emoji: '🤍', detail: 'Ton compagnon Nothing OS' },
+  { label: 'Un esprit sain dans 24h bien calées', emoji: '🧘', detail: 'Équilibre parfait' },
+]
 
 export function useBloubState({
   entries,
@@ -38,11 +63,19 @@ export function useBloubState({
     label: string
     emoji: string
     detail?: string
+    isDizzy?: boolean
+    isSleeping?: boolean
+    isFocusing?: boolean
+    isCosmic?: boolean
+    energyPercent?: number
     expiresAt: number
   } | null>(null)
 
-  // Indice de cycle au clic
+  // Indice de réplique au clic
   const [clickCount, setClickCount] = useState(0)
+
+  // Historique des timestamps de taps récents pour détecter le spam (Easter Egg tournis)
+  const tapHistoryRef = useRef<number[]>([])
 
   // Rafraîchir toutes les 30s pour mettre à jour l'humeur en fonction de l'heure courante
   const [nowMinute, setNowMinute] = useState(() => {
@@ -70,6 +103,11 @@ export function useBloubState({
     return () => clearTimeout(timer)
   }, [override])
 
+  // Jauge d'énergie de 0 à 100% basée sur l'avancement (objectif 8h par jour)
+  const energyPercent = useMemo(() => {
+    return Math.min(100, Math.max(10, Math.round((totalHours / 8) * 100)))
+  }, [totalHours])
+
   // Célébration lors de l'enregistrement d'une activité
   const triggerCelebration = useCallback((title?: string) => {
     playSuccessChime()
@@ -78,31 +116,79 @@ export function useBloubState({
       label: title ? `Enregistré : ${title} !` : 'Activité enregistrée !',
       emoji: '✨',
       detail: 'Bien joué, créneau validé !',
+      isCosmic: true,
       expiresAt: Date.now() + 3200,
     })
   }, [])
 
-  // Clic sur Bloub : cycle amusant d'expressions
+  // Clic sur Bloub : avec détection de spam (Easter egg tournis 😵)
   const handleBotClick = useCallback(() => {
-    playMechanicalClick()
-    const REACTION_STATES: Array<{ state: StateId; label: string; emoji: string; detail: string }> = [
-      { state: 'wink', label: 'Clin d’œil !', emoji: '😉', detail: 'Tout roule ?' },
-      { state: 'play', label: 'En mode turbo !', emoji: '🚀', detail: 'Prêt pour l’action' },
-      { state: 'swirl', label: 'Tourbillon !', emoji: '🌀', detail: 'Hop là !' },
-      { state: 'wide', label: 'Coucou toi !', emoji: '👀', detail: 'Je surveille ton temps' },
-      { state: 'comet', label: 'À la vitesse lumière', emoji: '💫', detail: 'Productivité max !' },
-      { state: 'hexagon', label: 'Glyph Matrix', emoji: '💎', detail: 'Nothing aesthetic' },
-    ]
+    const now = Date.now()
+    tapHistoryRef.current = [...tapHistoryRef.current.filter((t) => now - t < 1500), now]
 
-    const nextIndex = clickCount % REACTION_STATES.length
+    // 1. Détection de spam rapide (4 taps ou plus en moins de 1.5s)
+    if (tapHistoryRef.current.length >= 4) {
+      playBloubDizzy()
+      confetti({
+        particleCount: 20,
+        spread: 45,
+        origin: { y: 0.25 },
+        colors: ['#181818', '#FFA43B', '#FFFFFF'],
+      })
+      setOverride({
+        state: 'swirl',
+        label: 'Arrête de me poke, j’ai le tournis ! 😵',
+        emoji: '🌀',
+        detail: 'Surcharge sensorielle...',
+        isDizzy: true,
+        expiresAt: now + 3800,
+      })
+      tapHistoryRef.current = []
+      return
+    }
+
+    // 2. Clic normal : son mignon gazouillis et réplique amusante
+    playBloubChirp()
+    const nextIndex = clickCount % WITTY_PUNCHLINES.length
     setClickCount((prev) => prev + 1)
-    const reaction = REACTION_STATES[nextIndex]
+    const punchline = WITTY_PUNCHLINES[nextIndex]
+
+    const EXPRESSION_STATES: StateId[] = ['wink', 'wide', 'play', 'alert']
+    const expression = EXPRESSION_STATES[clickCount % EXPRESSION_STATES.length]
 
     setOverride({
-      ...reaction,
-      expiresAt: Date.now() + 3000,
+      state: expression,
+      label: punchline.label,
+      emoji: punchline.emoji,
+      detail: punchline.detail,
+      expiresAt: now + 3000,
     })
   }, [clickCount])
+
+  // Swipe tactile horizontal sur Bloub (Easter egg rotation à 360°)
+  const handleBotSwipe = useCallback((_direction: 'left' | 'right') => {
+    playBloubSpin()
+    setOverride({
+      state: 'play',
+      label: 'Wouhou ! Tourbillon 360° 🌀',
+      emoji: '🌪️',
+      detail: 'Sensations fortes !',
+      isCosmic: true,
+      expiresAt: Date.now() + 2500,
+    })
+  }, [])
+
+  // Quand l'utilisateur sélectionne un trou temporel sur la matrice
+  const handleSelectHole = useCallback((range?: { startTime: string; endTime: string }) => {
+    playMechanicalClick()
+    setOverride({
+      state: 'wide',
+      label: range ? `Qu’est-ce qu’on note de ${range.startTime} à ${range.endTime} ?` : 'Qu’est-ce qu’on note là ?',
+      emoji: '👀',
+      detail: 'Je t’écoute !',
+      expiresAt: Date.now() + 3000,
+    })
+  }, [])
 
   // Calcul de l'état contextuel du jour
   const contextualMood = useMemo<BloubMood>(() => {
@@ -111,16 +197,19 @@ export function useBloubState({
       if (isPomodoroBreak) {
         return {
           state: 'play',
-          label: 'Pause Pomodoro',
+          label: 'Pause Pomodoro ☕',
           emoji: '☕',
-          detail: 'Détends-toi quelques minutes',
+          detail: 'Café, étirements ou verre d’eau !',
+          energyPercent,
         }
       }
       return {
         state: 'thinking',
-        label: 'Focus Pomodoro',
+        label: 'Chut ! Cerveau en ébullition 🧠',
         emoji: '🧠',
-        detail: 'Session de concentration en cours',
+        detail: 'Session de focus Pomodoro en cours',
+        isFocusing: true,
+        energyPercent,
       }
     }
 
@@ -132,9 +221,11 @@ export function useBloubState({
       if (totalHours >= 7) {
         return {
           state: 'wink',
-          label: `${totalHours}h validées`,
+          label: `${totalHours}h validées !`,
           emoji: '⭐',
-          detail: 'Superbe journée accomplie',
+          detail: 'Masterclass de productivité',
+          isCosmic: true,
+          energyPercent,
         }
       }
       return {
@@ -142,6 +233,7 @@ export function useBloubState({
         label: `${totalHours}h au total`,
         emoji: '📅',
         detail: `Consultation du ${selectedDate}`,
+        energyPercent,
       }
     }
 
@@ -161,21 +253,28 @@ export function useBloubState({
     })
 
     if (currentEntry) {
-      if (isNightActivity(currentEntry.title) || currentEntry.type === 'perso' && /sommeil|nuit|dodo/i.test(currentEntry.title)) {
+      if (
+        isNightActivity(currentEntry.title) ||
+        (currentEntry.type === 'perso' && /sommeil|nuit|dodo/i.test(currentEntry.title))
+      ) {
         return {
           state: 'sleep',
-          label: 'Repos / Sommeil',
+          label: 'Zzz... Va dormir, ton écran te grille les yeux 😴',
           emoji: '🌙',
           detail: currentEntry.title,
+          isSleeping: true,
+          energyPercent,
         }
       }
 
       if (currentEntry.type === 'pro' || currentEntry.type === 'entreprises') {
         return {
           state: 'thinking',
-          label: `En focus : ${currentEntry.title}`,
+          label: `En plein focus : ${currentEntry.title}`,
           emoji: '💼',
           detail: `${currentEntry.startTime} - ${currentEntry.endTime}`,
+          isFocusing: true,
+          energyPercent,
         }
       }
 
@@ -185,14 +284,16 @@ export function useBloubState({
           label: `Apprentissage : ${currentEntry.title}`,
           emoji: '📖',
           detail: `${currentEntry.startTime} - ${currentEntry.endTime}`,
+          energyPercent,
         }
       }
 
       return {
         state: 'play',
-        label: currentEntry.title,
+        label: `En cours : ${currentEntry.title}`,
         emoji: '🎯',
         detail: `${currentEntry.startTime} - ${currentEntry.endTime}`,
+        energyPercent,
       }
     }
 
@@ -200,15 +301,27 @@ export function useBloubState({
     if (isNightTime) {
       return {
         state: 'sleep',
-        label: 'Mode nuit',
+        label: 'Zzz... Va dormir, tes yeux piquent 😴',
         emoji: '🌙',
         detail: 'C’est l’heure de recharger les batteries',
+        isSleeping: true,
+        energyPercent: 15,
+      }
+    }
+
+    // Le matin sans activité (7h - 9h30)
+    if (nowMinute >= 7 * 60 && nowMinute <= 9 * 60 + 30 && entries.length === 0) {
+      return {
+        state: 'wide',
+        label: 'Bien dormi ? C’est l’heure de briller ☀️',
+        emoji: '☀️',
+        detail: 'Prêt pour ton premier créneau ?',
+        energyPercent: 40,
       }
     }
 
     // En journée : vérifier s'il y a un trou depuis la dernière activité
     if (entries.length > 0) {
-      // Trouver la dernière activité terminée
       const sortedByEnd = [...entries].sort((a, b) => timeToMinutes(b.endTime) - timeToMinutes(a.endTime))
       const lastEndMin = timeToMinutes(sortedByEnd[0].endTime)
 
@@ -216,54 +329,69 @@ export function useBloubState({
         // Plus de 2 heures d'écart en pleine journée
         return {
           state: 'alert',
-          label: 'Un trou dans ton suivi ?',
+          label: 'Dis donc, ça fait 2h que tu glandes ? 👀',
           emoji: '👀',
-          detail: `Dernière fin à ${sortedByEnd[0].endTime}`,
+          detail: `Dernière activité finie à ${sortedByEnd[0].endTime}`,
+          energyPercent: Math.max(20, energyPercent - 20),
         }
       }
 
       if (nowMinute >= lastEndMin && nowMinute < lastEndMin + 20) {
         return {
           state: 'wink',
-          label: 'Bien joué pour la session !',
+          label: 'Session terminée, t’assures ! 👏',
           emoji: '👏',
           detail: 'Prêt pour la suite ?',
+          energyPercent,
         }
       }
     } else if (nowMinute >= 9 * 60 && nowMinute <= 19 * 60) {
-      // Journée entamée mais aucune saisie
+      // Journée bien entamée mais aucune saisie
       return {
-        state: 'wide',
-        label: 'Journée à remplir !',
-        emoji: '☀️',
-        detail: 'Ajoute ta première activité',
+        state: 'alert',
+        label: 'Où t’étais passé ? Viens noter ta journée !',
+        emoji: '👀',
+        detail: 'La matrice attend tes créneaux',
+        energyPercent: 25,
       }
     }
 
-    // Journée bien fournie
-    if (totalHours >= 8) {
+    // Journée bien fournie (> 7h-8h)
+    if (totalHours >= 7) {
       return {
         state: 'orbit',
-        label: `${totalHours}h au compteur !`,
+        label: 'T’es une machine aujourd’hui ! 🔥',
         emoji: '⚡',
-        detail: 'Excellente journée productive',
+        detail: `${totalHours}h au compteur, respect !`,
+        isCosmic: true,
+        energyPercent: 100,
       }
     }
 
     // Défaut paisible
     return {
       state: 'idle',
-      label: `${totalHours}h aujourd’hui`,
+      label: `${totalHours}h aujourd’hui · Je veille sur toi`,
       emoji: '✨',
       detail: 'TIMDOT actif',
+      energyPercent,
     }
-  }, [entries, totalHours, selectedDate, isPomodoroActive, isPomodoroBreak, nowMinute])
+  }, [entries, totalHours, selectedDate, isPomodoroActive, isPomodoroBreak, nowMinute, energyPercent])
 
-  const currentMood = override ?? contextualMood
+  const currentMood: BloubMood = {
+    ...(override ?? contextualMood),
+    energyPercent: override?.energyPercent ?? contextualMood.energyPercent,
+    isDizzy: override?.isDizzy ?? contextualMood.isDizzy,
+    isSleeping: override?.isSleeping ?? contextualMood.isSleeping,
+    isFocusing: override?.isFocusing ?? contextualMood.isFocusing,
+    isCosmic: override?.isCosmic ?? contextualMood.isCosmic,
+  }
 
   return {
     currentMood,
     triggerCelebration,
     handleBotClick,
+    handleBotSwipe,
+    handleSelectHole,
   }
 }

@@ -74,10 +74,6 @@ export function App() {
     setSelectedHour((prev) => (prev === hour ? null : hour))
   }
 
-  const handleSelectHole = (range: { startTime: string; endTime: string }) => {
-    setPrefilledRange(range)
-  }
-
   // Hook unifié du Pomodoro partagé entre la vue Pomodoro et le mode Standby
   const pomodoro = usePomodoro((entry) => {
     handleAddEntry(entry)
@@ -94,6 +90,11 @@ export function App() {
     isPomodoroActive: pomodoro.isRunning,
     isPomodoroBreak,
   })
+
+  const handleSelectHole = (range: { startTime: string; endTime: string }) => {
+    setPrefilledRange(range)
+    bloub.handleSelectHole(range)
+  }
 
   const handleAddEntry = (entryData: {
     title: string
@@ -169,6 +170,7 @@ export function App() {
           onToggleTheme={handleToggleTheme}
           bloubMood={bloub.currentMood}
           onBloubClick={bloub.handleBotClick}
+          onBloubSwipe={bloub.handleBotSwipe}
         />
 
 

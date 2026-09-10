@@ -168,3 +168,136 @@ export function playSuccessChime(): void {
     // Audio indisponible
   }
 }
+
+/**
+ * Gazouillis mignon Pocket Operator / R2-D2 quand Bloub s'exprime
+ */
+export function playBloubChirp(): void {
+  triggerHaptic(10)
+  if (!isSoundEnabled()) return
+
+  try {
+    const ctx = getAudioContext()
+    if (!ctx) return
+    const now = ctx.currentTime
+
+    const notes = [587.33, 783.99, 987.77] // Ré5, Sol5, Si5
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      const startT = now + idx * 0.045
+      osc.frequency.setValueAtTime(freq, startT)
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.05, startT + 0.06)
+
+      gain.gain.setValueAtTime(0.001, now)
+      gain.gain.setValueAtTime(0.06, startT)
+      gain.gain.exponentialRampToValueAtTime(0.0001, startT + 0.08)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start(startT)
+      osc.stop(startT + 0.09)
+    })
+  } catch {
+    // Audio indisponible
+  }
+}
+
+/**
+ * Son d'étourdissement / ressort "boing" rétro quand on le spamme de taps
+ */
+export function playBloubDizzy(): void {
+  triggerHaptic(25)
+  if (!isSoundEnabled()) return
+
+  try {
+    const ctx = getAudioContext()
+    if (!ctx) return
+    const now = ctx.currentTime
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'triangle'
+
+    osc.frequency.setValueAtTime(440, now)
+    // Wobble vibrato rapide
+    for (let i = 0; i < 6; i++) {
+      const t = now + i * 0.05
+      osc.frequency.setValueAtTime(i % 2 === 0 ? 460 : 380, t)
+    }
+    osc.frequency.exponentialRampToValueAtTime(160, now + 0.35)
+
+    gain.gain.setValueAtTime(0.08, now)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start(now)
+    osc.stop(now + 0.36)
+  } catch {
+    // Audio indisponible
+  }
+}
+
+/**
+ * Bruit de rotation mécanique rapide (swipe 360°)
+ */
+export function playBloubSpin(): void {
+  triggerHaptic(15)
+  if (!isSoundEnabled()) return
+
+  try {
+    const ctx = getAudioContext()
+    if (!ctx) return
+    const now = ctx.currentTime
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(240, now)
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12)
+    osc.frequency.exponentialRampToValueAtTime(320, now + 0.28)
+
+    gain.gain.setValueAtTime(0.07, now)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start(now)
+    osc.stop(now + 0.3)
+  } catch {
+    // Audio indisponible
+  }
+}
+
+/**
+ * Petit ronflement doux synthétique en mode nuit
+ */
+export function playBloubSnore(): void {
+  if (!isSoundEnabled()) return
+
+  try {
+    const ctx = getAudioContext()
+    if (!ctx) return
+    const now = ctx.currentTime
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(95, now)
+    osc.frequency.linearRampToValueAtTime(125, now + 0.25)
+    osc.frequency.linearRampToValueAtTime(80, now + 0.5)
+
+    gain.gain.setValueAtTime(0.001, now)
+    gain.gain.linearRampToValueAtTime(0.03, now + 0.25)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.52)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start(now)
+    osc.stop(now + 0.55)
+  } catch {
+    // Audio indisponible
+  }
+}
