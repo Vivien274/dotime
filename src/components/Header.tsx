@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Monitor, Sun, Moon, RefreshCw, Volume2, VolumeX } from 'lucide-react'
+import { Monitor, Sun, Moon, RefreshCw, Volume2, VolumeX } from 'lucide-react'
 import { getFormattedDateKey } from '../constants/initialData'
 import { isSoundEnabled, setSoundEnabled, playMechanicalClick } from '../utils/soundEffects'
 import { BloubAvatar } from './BloubAvatar'
@@ -31,7 +31,7 @@ const SoundToggleButton: React.FC = () => {
 
 interface HeaderProps {
   selectedDate: string
-  onDateChange: (dateStr: string) => void
+  onDateChange?: (dateStr: string) => void
   totalHours: number
   onResetDay?: () => void
   onOpenStandby?: () => void
@@ -72,25 +72,15 @@ export const Header: React.FC<HeaderProps> = ({
     setTimeout(() => setIsRefreshing(false), 500)
     if (onRefresh) {
       onRefresh()
-    } else {
+    } else if (onDateChange) {
       onDateChange(todayKey)
     }
   }
 
-  const handlePrevDay = () => {
-    const prev = new Date(dateObj)
-    prev.setDate(prev.getDate() - 1)
-    onDateChange(getFormattedDateKey(prev))
-  }
-
-  const handleNextDay = () => {
-    const next = new Date(dateObj)
-    next.setDate(next.getDate() + 1)
-    onDateChange(getFormattedDateKey(next))
-  }
-
   const handleToday = () => {
-    onDateChange(todayKey)
+    if (onDateChange) {
+      onDateChange(todayKey)
+    }
   }
 
   return (
@@ -148,8 +138,8 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
 
-      {/* Date Header avec Grand numéro Dot-Matrix agrandi et aligné en bas avec l'horaire */}
-      <div className="flex items-end justify-between border-b border-black/10 pb-4">
+      {/* Date Header avec Grand numéro Dot-Matrix à gauche et Bloub agrandi à droite */}
+      <div className="flex items-center justify-between border-b border-black/10 pb-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-mono-tech font-bold tracking-widest text-zinc-900/70 uppercase">
             <span>{dayName}</span>
@@ -169,43 +159,18 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Droite : Avatar Bloub animé réactif & Boutons de navigation temporelle */}
-        <div className="flex flex-col items-end gap-2 pb-0.5">
-          {/* Tête Bloub réactive Nothing OS */}
+        {/* Droite : Bloub géant réactif Nothing OS (3x agrandi, tactile/autonome) */}
+        <div className="shrink-0 flex items-center justify-center">
           <BloubAvatar
             state={bloubMood?.state ?? 'idle'}
             theme={theme}
-            size={56}
+            size={168}
             statusLabel={bloubMood?.label}
             statusEmoji={bloubMood?.emoji}
             statusDetail={bloubMood?.detail}
             onClick={onBloubClick}
+            followCursor={false}
           />
-
-          {/* Boutons de navigation temporelle */}
-          <div className="flex items-center bg-white/25 backdrop-blur-md rounded-full p-1 border border-black/10 shadow-sm">
-            <button
-              onClick={handlePrevDay}
-              title="Jour précédent"
-              className="p-1.5 rounded-full hover:bg-white/50 text-[#181818] transition-colors"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              onClick={handleToday}
-              title="Aujourd'hui"
-              className="p-1.5 rounded-full hover:bg-white/50 text-[#181818] transition-colors"
-            >
-              <CalendarIcon size={14} />
-            </button>
-            <button
-              onClick={handleNextDay}
-              title="Jour suivant"
-              className="p-1.5 rounded-full hover:bg-white/50 text-[#181818] transition-colors"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
         </div>
       </div>
     </header>

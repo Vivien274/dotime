@@ -16,7 +16,8 @@ import { PomodoroTimer } from './components/PomodoroTimer'
 import { BackgroundBlobs } from './components/BackgroundBlobs'
 import type { ActivityType } from './types'
 import confetti from 'canvas-confetti'
-import { Clock, Calendar, LayoutGrid, Plus } from 'lucide-react'
+import { Clock, Calendar as CalendarIcon, LayoutGrid, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { getFormattedDateKey } from './constants/initialData'
 
 export function App() {
   const [selectedHour, setSelectedHour] = useState<number | null>(null)
@@ -113,6 +114,34 @@ export function App() {
     })
   }
 
+  const handlePrevDate = () => {
+    const d = new Date(selectedDate + 'T12:00:00')
+    if (currentView === 'month') {
+      d.setMonth(d.getMonth() - 1)
+    } else if (currentView === 'week') {
+      d.setDate(d.getDate() - 7)
+    } else {
+      d.setDate(d.getDate() - 1)
+    }
+    setSelectedDate(getFormattedDateKey(d))
+  }
+
+  const handleNextDate = () => {
+    const d = new Date(selectedDate + 'T12:00:00')
+    if (currentView === 'month') {
+      d.setMonth(d.getMonth() + 1)
+    } else if (currentView === 'week') {
+      d.setDate(d.getDate() + 7)
+    } else {
+      d.setDate(d.getDate() + 1)
+    }
+    setSelectedDate(getFormattedDateKey(d))
+  }
+
+  const handleTodayDate = () => {
+    setSelectedDate(getFormattedDateKey())
+  }
+
   return (
     <div
       className={`min-h-screen w-full relative flex flex-col items-center justify-start py-4 px-3 sm:px-4 pb-24 overflow-x-hidden ${
@@ -148,8 +177,9 @@ export function App() {
         {/* 1. Onglet SUIVI (Jour / Semaine / Mois) */}
         {navTab === 'tracker' && (
           <>
-            {/* Commutateur de vue : JOUR / SEMAINE / MOIS */}
-            <div className="flex items-center justify-center">
+            {/* Ligne : Onglets JOUR / SEMAINE / MOIS (gauche) + Sélecteur de date (droite) */}
+            <div className="flex items-center justify-between gap-2 w-full">
+              {/* Onglets alignés à gauche */}
               <div className="inline-flex p-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-sm">
                 <button
                   onClick={() => setCurrentView('day')}
@@ -170,7 +200,7 @@ export function App() {
                       : 'text-zinc-800 hover:text-black'
                   }`}
                 >
-                  <Calendar size={12} />
+                  <CalendarIcon size={12} />
                   <span>SEMAINE</span>
                 </button>
                 <button
@@ -183,6 +213,31 @@ export function App() {
                 >
                   <LayoutGrid size={12} />
                   <span>MOIS</span>
+                </button>
+              </div>
+
+              {/* Sélecteur de date aligné à droite sur la même ligne */}
+              <div className="flex items-center bg-white/20 backdrop-blur-md rounded-full p-1 border border-white/30 shadow-sm shrink-0">
+                <button
+                  onClick={handlePrevDate}
+                  title="Période précédente"
+                  className="p-1.5 rounded-full hover:bg-white/50 text-[#181818] transition-colors cursor-pointer"
+                >
+                  <ChevronLeft size={15} />
+                </button>
+                <button
+                  onClick={handleTodayDate}
+                  title="Aujourd'hui"
+                  className="p-1.5 rounded-full hover:bg-white/50 text-[#181818] transition-colors cursor-pointer"
+                >
+                  <CalendarIcon size={13} />
+                </button>
+                <button
+                  onClick={handleNextDate}
+                  title="Période suivante"
+                  className="p-1.5 rounded-full hover:bg-white/50 text-[#181818] transition-colors cursor-pointer"
+                >
+                  <ChevronRight size={15} />
                 </button>
               </div>
             </div>

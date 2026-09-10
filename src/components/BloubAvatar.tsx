@@ -22,13 +22,13 @@ interface BloubAvatarProps {
 
 export const BloubAvatar: React.FC<BloubAvatarProps> = ({
   state = 'idle',
-  size = 62,
+  size = 160,
   theme = 'light',
   statusLabel,
   statusEmoji,
   statusDetail,
   onClick,
-  followCursor = true,
+  followCursor = false,
   showTooltip = true,
   className = '',
 }) => {
@@ -176,7 +176,10 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
       {/* Tête SVG Bloub */}
       <button
         type="button"
-        onClick={onClick}
+        onClick={() => {
+          setShowRecentFeedback(true)
+          if (onClick) onClick()
+        }}
         title={statusLabel || 'Bloub, avatar réactif'}
         className="relative cursor-pointer transition-transform duration-200 active:scale-90 hover:scale-105 outline-none focus:ring-2 focus:ring-black/20 rounded-full"
         style={{ width: size, height: size }}
