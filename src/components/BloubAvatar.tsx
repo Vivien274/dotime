@@ -89,6 +89,8 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
       document.addEventListener('pointerleave', onPointerLeave)
     }
 
+    let nextGazeShift = 0
+
     const loop = (ms: number) => {
       rafId = requestAnimationFrame(loop)
       if (!engineRef.current) return
@@ -97,31 +99,59 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
       lastTime = ms
       clock += dt
 
-      // Suivi du regard
-      if (followCursor) {
-        const hasBaseFace = STATE_BY_ID.get(currentStateRef.current)?.baseFace ?? false
-        if (!hasBaseFace) {
-          if (aiming) {
-            engineRef.current.setLook(null, clock, TURN_TIME)
-            aiming = false
-          }
-        } else {
-          const rect = svgRef.current?.getBoundingClientRect()
-          if (rect && rect.width > 0 && rect.height > 0) {
-            if (!aiming) turnSince = clock
-            const halfW = Math.max(1, window.innerWidth / 2)
-            const halfH = Math.max(1, window.innerHeight / 2)
-            engineRef.current.setLook(
-              lookTarget({
-                nx: pointerPos ? clamp((pointerPos.x - (rect.left + rect.width / 2)) / halfW, -1, 1) : 0,
-                ny: pointerPos ? clamp((pointerPos.y - (rect.top + rect.height / 2)) / halfH, -1, 1) : 0,
-                tour: easings.easeOutQuint(clamp((clock - turnSince) / TURN_TIME)),
-                pointer: pointerPos !== null,
-              }),
-              clock
-            )
-            aiming = true
-          }
+      // Gestion du regard (autonome tactile ou suivi du pointeur)
+      const hasBaseFace = STATE_BY_ID.get(currentStateRef.current)?.baseFace ?? false
+
+      if (!hasBaseFace) {
+        if (aiming) {
+          engineRef.current.setLook(null, clock, TURN_TIME)
+          aiming = false
+        }
+      } else if (followCursor) {
+        const rect = svgRef.current?.getBoundingClientRect()
+        if (rect && rect.width > 0 && rect.height > 0) {
+          if (!aiming) turnSince = clock
+          const halfW = Math.max(1, window.innerWidth / 2)
+          const halfH = Math.max(1, window.innerHeight / 2)
+          engineRef.current.setLook(
+            lookTarget({
+              nx: pointerPos ? clamp((pointerPos.x - (rect.left + rect.width / 2)) / halfW, -1, 1) : 0,
+              ny: pointerPos ? clamp((pointerPos.y - (rect.top + rect.height / 2)) / halfH, -1, 1) : 0,
+              tour: easings.easeOutQuint(clamp((clock - turnSince) / TURN_TIME)),
+              pointer: pointerPos !== null,
+            }),
+            clock
+          )
+          aiming = true
+        }
+      } else {
+        // Mode autonome tactile : balayage vivant et naturel du regard toutes les 3.5 à 6s
+        if (clock >= nextGazeShift) {
+          const shiftInterval = 3.5 + Math.random() * 2.5
+          nextGazeShift = clock + shiftInterval
+
+          // Cibles de regard orientées vers la page et l'utilisateur
+          const targets = [
+            { yaw: -20, pitch: -8 },   // Regarde la timeline et les activités
+            { yaw: -28, pitch: 4 },    // Regarde le numéro du jour à gauche
+            { yaw: -6, pitch: -3 },    // Regarde vers l'utilisateur (droit devant)
+            { yaw: -15, pitch: -16 },  // Regarde les cartes du bas
+            { yaw: -10, pitch: 8 },    // Regard pensif
+            { yaw: -24, pitch: -12 },  // Regarde les onglets Jour / Semaine / Mois
+          ]
+          const chosen = targets[Math.floor(Math.random() * targets.length)]
+          engineRef.current.setLook(
+            {
+              yaw: chosen.yaw,
+              pitch: chosen.pitch,
+              mix: 1,
+              spin: 0,
+              wander: 1, // Conserve la micro-dérive naturelle vivante
+            },
+            clock,
+            0.65 // Transition fluide
+          )
+          aiming = true
         }
       }
 

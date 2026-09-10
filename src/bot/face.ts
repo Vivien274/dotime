@@ -23,8 +23,8 @@ export const EYE_SPLIT = 15.46
 export const EYE_W = 0.186
 export const EYE_H = 0.412
 
-/** Orientation de tete au repos, ajustee sur les frames de reference. */
-export const REST_GAZE: HeadGaze = { yaw: 28.49, pitch: 28.62, roll: -13 }
+/** Orientation de tete au repos pour Timdot : orientee vers l'ecran et l'utilisateur (gauche et legerement vers le bas). */
+export const REST_GAZE: HeadGaze = { yaw: -16, pitch: -6, roll: -4 }
 
 export interface EyePose {
   x: number
