@@ -257,7 +257,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-black/[0.03] border border-black/10">
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               <div className="min-w-0 flex flex-col">
-                <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold mb-1 truncate">
+                <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold mb-1.5 truncate">
                   De (Début)
                 </label>
                 <input
@@ -265,12 +265,12 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                   required
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-28 max-w-full min-w-0 px-2 sm:px-2.5 py-1.5 rounded-xl bg-white border border-black/20 text-zinc-950 font-mono-tech font-bold text-sm text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                  className="w-full min-w-0 max-w-full px-3 py-2.5 rounded-2xl bg-white border border-black/15 text-zinc-950 font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
                 />
               </div>
 
               <div className="min-w-0 flex flex-col">
-                <div className="flex items-center justify-between gap-1 mb-1">
+                <div className="flex items-center justify-between gap-1 mb-1.5">
                   <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold truncate">
                     À (Fin)
                   </label>
@@ -289,9 +289,10 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                   required
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-28 max-w-full min-w-0 px-2 sm:px-2.5 py-1.5 rounded-xl bg-white border border-black/20 text-zinc-950 font-mono-tech font-bold text-sm text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                  className="w-full min-w-0 max-w-full px-3 py-2.5 rounded-2xl bg-white border border-black/15 text-zinc-950 font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
                 />
               </div>
+
             </div>
 
 

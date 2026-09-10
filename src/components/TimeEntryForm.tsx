@@ -287,7 +287,7 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             {/* De */}
             <div className="min-w-0 flex flex-col">
-              <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold mb-1 truncate">
+              <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold mb-1.5 truncate">
                 {isNightTopic ? 'Couché (Hier)' : 'De (Début auto)'}
               </label>
               <input
@@ -295,13 +295,13 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
                 required
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-28 max-w-full min-w-0 px-2 sm:px-2.5 py-1.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full min-w-0 max-w-full px-3 py-2.5 rounded-2xl bg-white dark:bg-white/15 border border-black/15 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
 
             {/* À */}
             <div className="min-w-0 flex flex-col">
-              <div className="flex items-center justify-between gap-1 mb-1">
+              <div className="flex items-center justify-between gap-1 mb-1.5">
                 <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold truncate">
                   {isNightTopic ? 'Réveil (Matin)' : 'À (Fin)'}
                 </label>
@@ -320,9 +320,10 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
                 required
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-28 max-w-full min-w-0 px-2 sm:px-2.5 py-1.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full min-w-0 max-w-full px-3 py-2.5 rounded-2xl bg-white dark:bg-white/15 border border-black/15 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
+
           </div>
 
 
