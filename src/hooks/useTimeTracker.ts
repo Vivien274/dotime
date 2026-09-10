@@ -209,7 +209,17 @@ export function useTimeTracker() {
   // Heure de début intelligente suggérée (l'heure de fin du dernier créneau de la journée)
   const suggestedStartTime = useMemo(() => {
     if (currentDayEntries.length > 0) {
-      const lastEntry = currentDayEntries[currentDayEntries.length - 1]
+      // Trier par ordre chronologique effectif pour que les nuits (ex: 23h-7h) soient au début de la journée
+      const sortedChronological = [...currentDayEntries].sort((a, b) => {
+        const aStart = timeStringToHours(a.startTime)
+        const aEnd = timeStringToHours(a.endTime)
+        const aEff = aEnd < aStart ? aStart - 24 : aStart
+        const bStart = timeStringToHours(b.startTime)
+        const bEnd = timeStringToHours(b.endTime)
+        const bEff = bEnd < bStart ? bStart - 24 : bStart
+        return aEff - bEff
+      })
+      const lastEntry = sortedChronological[sortedChronological.length - 1]
       return lastEntry.endTime
     }
     return '08:00'

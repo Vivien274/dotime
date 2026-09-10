@@ -39,6 +39,28 @@ function formatMinutesDuration(totalMinutes: number): string {
   return `${mins}m`
 }
 
+function getEntryEffectiveMinutes(entry: TimeEntry): { startMin: number; endMin: number } {
+  const s = timeToMinutes(entry.startTime)
+  let e = timeToMinutes(entry.endTime)
+  if (entry.endTime === '00:00' && entry.startTime !== '00:00') {
+    e = 1440
+  }
+
+  // Si l'activité traverse minuit (ex: 23:00 -> 07:00), elle correspond au sommeil de la nuit passée
+  // qui s'est achevé ce matin. Dans le cycle de la journée, elle se positionne au tout début (startMin négatif).
+  if (e < s) {
+    return {
+      startMin: s - 1440,
+      endMin: e,
+    }
+  }
+
+  return {
+    startMin: s,
+    endMin: e,
+  }
+}
+
 export const DayEntriesList: React.FC<DayEntriesListProps> = ({
   entries,
   onDeleteEntry,
@@ -60,16 +82,16 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
     }
   }, [highlightedEntryId])
 
-  // Trier les entrées en ordre antéchronologique (le plus récent en haut)
+  // Trier les entrées en ordre antéchronologique (le plus récent en haut, la nuit passée tout en bas)
   const sortedEntries = useMemo(() => {
     return [...entries].sort((a, b) => {
-      const aMin = timeToMinutes(a.startTime)
-      const bMin = timeToMinutes(b.startTime)
-      return bMin - aMin // Descendant : plus récent en haut
+      const aTimes = getEntryEffectiveMinutes(a)
+      const bTimes = getEntryEffectiveMinutes(b)
+      return bTimes.startMin - aTimes.startMin // Descendant : plus récent en haut
     })
   }, [entries])
 
-  // Détecter les trous temporels entre les entrées (en ordre descendant)
+  // Détecter les trous temporels réels entre les entrées
   const timelineItems = useMemo(() => {
     const items: Array<
       | { kind: 'entry'; entry: TimeEntry }
@@ -83,18 +105,16 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
       // Vérifier s'il y a un trou avec l'entrée précédente dans la journée (qui a eu lieu plus tôt)
       if (i < sortedEntries.length - 1) {
         const earlierEntry = sortedEntries[i + 1]
-        const currentStart = timeToMinutes(current.startTime)
-        const earlierEnd = timeToMinutes(
-          earlierEntry.endTime === '00:00' ? '24:00' : earlierEntry.endTime
-        )
+        const currentTimes = getEntryEffectiveMinutes(current)
+        const earlierTimes = getEntryEffectiveMinutes(earlierEntry)
 
-        if (currentStart > earlierEnd + 5) {
+        if (currentTimes.startMin > earlierTimes.endMin + 5) {
           // Trou supérieur à 5 minutes
           items.push({
             kind: 'gap',
             startTime: earlierEntry.endTime,
             endTime: current.startTime,
-            durationMinutes: currentStart - earlierEnd,
+            durationMinutes: currentTimes.startMin - earlierTimes.endMin,
           })
         }
       }
@@ -102,6 +122,7 @@ export const DayEntriesList: React.FC<DayEntriesListProps> = ({
 
     return items
   }, [sortedEntries])
+
 
   return (
     <div className="space-y-4">
