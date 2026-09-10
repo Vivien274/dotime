@@ -210,25 +210,28 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Bulle d'expression réactive Nothing OS avec jauge d'énergie */}
+      {/* Bulle d'expression réactive Nothing OS avec jauge d'énergie (sous Bloub pour ne jamais déborder de l'écran) */}
       {showTooltip && statusLabel && (
         <div
-          className={`absolute bottom-full mb-2 right-0 pointer-events-none transition-all duration-300 z-50 whitespace-nowrap max-w-[280px] sm:max-w-xs ${
+          className={`absolute top-full mt-2 right-1 sm:right-3 pointer-events-none transition-all duration-300 z-50 w-max max-w-[260px] sm:max-w-xs ${
             isBubbleVisible
               ? 'opacity-100 translate-y-0 scale-100'
-              : 'opacity-0 translate-y-2 scale-95'
+              : 'opacity-0 -translate-y-2 scale-95'
           }`}
         >
-          <div className="px-3.5 py-2 rounded-2xl bg-[#181818] text-white shadow-2xl border border-white/20 text-xs font-mono-tech font-bold tracking-wide backdrop-blur-xl flex flex-col gap-1.5">
+          {/* Petite flèche pointant vers le haut vers Bloub */}
+          <div className="absolute -top-1.5 right-12 sm:right-16 w-3 h-3 bg-[#181818] border-l border-t border-white/20 rotate-45 z-10" />
+
+          <div className="relative px-3.5 py-2.5 rounded-2xl bg-[#181818] text-white shadow-2xl border border-white/20 text-xs font-mono-tech font-bold tracking-wide backdrop-blur-xl flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5">
               {statusEmoji && <span className="text-sm shrink-0">{statusEmoji}</span>}
-              <span className="uppercase text-[11px] leading-tight font-extrabold text-white">
+              <span className="uppercase text-[11px] leading-tight font-extrabold text-white break-words">
                 {statusLabel}
               </span>
             </div>
 
             {statusDetail && (
-              <div className="text-[10px] text-zinc-400 font-normal leading-tight">
+              <div className="text-[10px] text-zinc-400 font-normal leading-tight break-words">
                 {statusDetail}
               </div>
             )}
@@ -249,9 +252,6 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
               </div>
             </div>
           </div>
-
-          {/* Petite flèche */}
-          <div className="w-2.5 h-2.5 bg-[#181818] border-r border-b border-white/20 rotate-45 mx-auto -mt-1.5 mr-8" />
         </div>
       )}
 
