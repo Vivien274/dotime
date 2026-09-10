@@ -23,6 +23,7 @@ interface BloubAvatarProps {
   onSwipe?: (direction: 'left' | 'right') => void
   followCursor?: boolean
   showTooltip?: boolean
+  tooltipPlacement?: 'right' | 'center'
   className?: string
 }
 
@@ -41,6 +42,7 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
   onSwipe,
   followCursor = false,
   showTooltip = true,
+  tooltipPlacement = 'right',
   className = '',
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null)
@@ -213,14 +215,20 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
       {/* Bulle d'expression réactive Nothing OS avec jauge d'énergie (sous Bloub pour ne jamais déborder de l'écran) */}
       {showTooltip && statusLabel && (
         <div
-          className={`absolute top-full mt-2 right-1 sm:right-3 pointer-events-none transition-all duration-300 z-50 w-max max-w-[260px] sm:max-w-xs ${
+          className={`absolute top-full mt-2 pointer-events-none transition-all duration-300 z-50 w-max max-w-[260px] sm:max-w-xs ${
+            tooltipPlacement === 'center' ? 'left-1/2 -translate-x-1/2' : 'right-1 sm:right-3'
+          } ${
             isBubbleVisible
               ? 'opacity-100 translate-y-0 scale-100'
               : 'opacity-0 -translate-y-2 scale-95'
           }`}
         >
           {/* Petite flèche pointant vers le haut vers Bloub */}
-          <div className="absolute -top-1.5 right-12 sm:right-16 w-3 h-3 bg-[#181818] border-l border-t border-white/20 rotate-45 z-10" />
+          <div
+            className={`absolute -top-1.5 w-3 h-3 bg-[#181818] border-l border-t border-white/20 rotate-45 z-10 ${
+              tooltipPlacement === 'center' ? 'left-1/2 -translate-x-1/2' : 'right-12 sm:right-16'
+            }`}
+          />
 
           <div className="relative px-3.5 py-2.5 rounded-2xl bg-[#181818] text-white shadow-2xl border border-white/20 text-xs font-mono-tech font-bold tracking-wide backdrop-blur-xl flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5">

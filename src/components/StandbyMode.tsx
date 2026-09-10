@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import type { HourSlot, DaySummaryStats } from '../types'
 import { usePomodoro, POMODORO_PRESETS, type PomodoroMode } from '../hooks/usePomodoro'
 import { X, Maximize2, Minimize2, Play, Pause, RotateCcw, Timer, Sparkles } from 'lucide-react'
+import { BloubAvatar } from './BloubAvatar'
+import type { useBloubState } from '../hooks/useBloubState'
 
 interface StandbyModeProps {
   isOpen: boolean
@@ -10,6 +12,9 @@ interface StandbyModeProps {
   stats: DaySummaryStats
   selectedDate: string
   pomodoro: ReturnType<typeof usePomodoro>
+  bloubMood?: ReturnType<typeof useBloubState>['currentMood']
+  onBloubClick?: () => void
+  onBloubSwipe?: (direction: 'left' | 'right') => void
 }
 
 export const StandbyMode: React.FC<StandbyModeProps> = ({
@@ -19,6 +24,9 @@ export const StandbyMode: React.FC<StandbyModeProps> = ({
   stats,
   selectedDate,
   pomodoro,
+  bloubMood,
+  onBloubClick,
+  onBloubSwipe,
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -113,11 +121,32 @@ export const StandbyMode: React.FC<StandbyModeProps> = ({
         </div>
       </div>
 
-      {/* Contenu central : Horloge géante + Minuteur Pomodoro + Matrice 24 points */}
-      <div className="flex flex-col items-center justify-center my-auto w-full max-w-2xl mx-auto text-center space-y-6 sm:space-y-7 py-4">
+      {/* Contenu central : Bloub animé + Date + Horloge géante + Minuteur Pomodoro + Matrice 24 points */}
+      <div className="flex flex-col items-center justify-center my-auto w-full max-w-2xl mx-auto text-center space-y-4 sm:space-y-5 py-3">
         {/* Date stylisée */}
         <div className="font-mono-tech text-xs sm:text-sm tracking-[0.2em] text-zinc-500 font-semibold uppercase">
           {dayName} · {dateFormatted}
+        </div>
+
+        {/* Bloub animé réactif Nothing OS en haut au milieu, juste au-dessus de l'heure */}
+        <div className="flex items-center justify-center relative">
+          <BloubAvatar
+            state={bloubMood?.state ?? (isPomoRunning ? (isPomoBreak ? 'play' : 'thinking') : 'idle')}
+            theme="dark"
+            size={150}
+            statusLabel={bloubMood?.label}
+            statusEmoji={bloubMood?.emoji}
+            statusDetail={bloubMood?.detail}
+            energyPercent={bloubMood?.energyPercent}
+            isDizzy={bloubMood?.isDizzy}
+            isSleeping={bloubMood?.isSleeping}
+            isFocusing={bloubMood?.isFocusing || (isPomoRunning && !isPomoBreak)}
+            isCosmic={bloubMood?.isCosmic}
+            onClick={onBloubClick}
+            onSwipe={onBloubSwipe}
+            followCursor={false}
+            tooltipPlacement="center"
+          />
         </div>
 
         {/* Horloge géante Dot-Matrix Timdot */}

@@ -331,6 +331,9 @@ export function App() {
         stats={daySummaryStats}
         selectedDate={selectedDate}
         pomodoro={pomodoro}
+        bloubMood={bloub.currentMood}
+        onBloubClick={bloub.handleBotClick}
+        onBloubSwipe={bloub.handleBotSwipe}
       />
 
       {/* Modal d'export du bilan (Texte / Markdown) */}
