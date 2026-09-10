@@ -274,34 +274,34 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
 
         {/* 4. Plage Horaire (De quand à quand) pré-remplie automatiquement */}
         <div className="p-3.5 rounded-2xl bg-black/5 border border-black/5">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             {/* De */}
-            <div>
-              <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold mb-1">
-                {isNightTopic ? 'Couché (Hier soir)' : 'De (Début auto)'}
+            <div className="min-w-0 flex flex-col">
+              <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold mb-1 truncate">
+                {isNightTopic ? 'Couché (Hier)' : 'De (Début auto)'}
               </label>
               <input
                 type="time"
                 required
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-base shadow-xs tracking-wider focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full max-w-full min-w-0 px-2 sm:px-3 py-2 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
 
             {/* À */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold">
-                  {isNightTopic ? 'Réveil (Ce matin)' : 'À (Fin)'}
+            <div className="min-w-0 flex flex-col">
+              <div className="flex items-center justify-between gap-1 mb-1">
+                <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-700 font-bold truncate">
+                  {isNightTopic ? 'Réveil (Matin)' : 'À (Fin)'}
                 </label>
                 <button
                   type="button"
                   onClick={handleSetNow}
                   title="Régler sur l'heure actuelle"
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/10 hover:bg-[#181818] hover:text-white text-zinc-800 text-[9px] font-mono-tech font-bold uppercase transition-colors cursor-pointer"
+                  className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/10 hover:bg-[#181818] hover:text-white text-zinc-800 text-[8.5px] font-mono-tech font-bold uppercase transition-colors cursor-pointer"
                 >
-                  <Clock size={9} />
+                  <Clock size={8.5} />
                   <span>Maintenant</span>
                 </button>
               </div>
@@ -310,10 +310,11 @@ export const TimeEntryForm: React.FC<TimeEntryFormProps> = ({
                 required
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-base shadow-xs tracking-wider focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full max-w-full min-w-0 px-2 sm:px-3 py-2 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
           </div>
+
 
           {/* Raccourcis de durée adaptés (Sommeil vs Standard) */}
           <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2.5 border-t border-black/10 text-[10px] font-mono-tech">

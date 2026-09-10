@@ -157,9 +157,9 @@ export const EditActivityModal: React.FC<EditActivityModalProps> = ({
           </div>
 
           {/* Horaires début / fin */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-800 font-bold mb-1.5">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="min-w-0 flex flex-col">
+              <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-800 font-bold mb-1.5 truncate">
                 Heure début
               </label>
               <input
@@ -167,11 +167,11 @@ export const EditActivityModal: React.FC<EditActivityModalProps> = ({
                 required
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-base shadow-xs tracking-wider focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full max-w-full min-w-0 px-2 sm:px-3 py-2 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-800 font-bold mb-1.5">
+            <div className="min-w-0 flex flex-col">
+              <label className="block text-[10px] font-mono-tech uppercase tracking-wider text-zinc-800 font-bold mb-1.5 truncate">
                 Heure fin
               </label>
               <input
@@ -179,10 +179,11 @@ export const EditActivityModal: React.FC<EditActivityModalProps> = ({
                 required
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-base shadow-xs tracking-wider focus:outline-none focus:ring-2 focus:ring-[#181818]"
+                className="w-full max-w-full min-w-0 px-2 sm:px-3 py-2 rounded-xl bg-white dark:bg-white/15 border border-black/20 text-zinc-950 dark:text-white font-mono-tech font-bold text-sm sm:text-base text-center shadow-xs focus:outline-none focus:ring-2 focus:ring-[#181818]"
               />
             </div>
           </div>
+
 
           {/* Raccourcis durée rapide */}
           <div className="flex items-center justify-between pt-1 text-[10px] font-mono-tech">
