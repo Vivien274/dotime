@@ -38,7 +38,6 @@ interface HeaderProps {
   theme?: 'light' | 'dark'
   onToggleTheme?: () => void
   onOpenExport?: () => void
-  onRefresh?: () => void
   bloubMood?: BloubMood
   onBloubClick?: () => void
 }
@@ -50,7 +49,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenStandby,
   theme = 'light',
   onToggleTheme,
-  onRefresh,
   bloubMood,
   onBloubClick,
 }) => {
@@ -69,12 +67,8 @@ export const Header: React.FC<HeaderProps> = ({
   const handleRefresh = () => {
     playMechanicalClick()
     setIsRefreshing(true)
-    setTimeout(() => setIsRefreshing(false), 500)
-    if (onRefresh) {
-      onRefresh()
-    } else if (onDateChange) {
-      onDateChange(todayKey)
-    }
+    // Véritable rafraîchissement complet du navigateur ("F5")
+    window.location.reload()
   }
 
   const handleToday = () => {
@@ -92,11 +86,11 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="font-dot text-[11px] tracking-wider text-[#181818]">TIMDOT (24H)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          {/* Bouton Actualiser */}
+          {/* Bouton Actualiser / F5 */}
           <button
             type="button"
             onClick={handleRefresh}
-            title="Actualiser sur aujourd'hui"
+            title="Recharger la page (F5)"
             className="p-1.5 rounded-full bg-white/25 hover:bg-[#181818] hover:text-white border border-black/10 text-zinc-800 transition-all cursor-pointer"
           >
             <RefreshCw size={11} className={isRefreshing ? 'animate-spin' : ''} />

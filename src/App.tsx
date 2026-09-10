@@ -59,7 +59,6 @@ export function App() {
     topics,
     selectedDate,
     setSelectedDate,
-    refreshToToday,
     currentDayEntries,
     day24Hours,
     suggestedStartTime,
@@ -168,7 +167,6 @@ export function App() {
           onOpenStandby={() => setIsStandbyOpen(true)}
           theme={theme}
           onToggleTheme={handleToggleTheme}
-          onRefresh={refreshToToday}
           bloubMood={bloub.currentMood}
           onBloubClick={bloub.handleBotClick}
         />
