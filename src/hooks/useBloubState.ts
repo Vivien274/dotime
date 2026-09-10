@@ -38,16 +38,18 @@ function timeToMinutes(timeStr: string): number {
 }
 
 const WITTY_PUNCHLINES = [
-  { label: 'Je garde un œil sur ton temps...', emoji: '👀', detail: 'Rien ne m’échappe !' },
-  { label: 'Tu gères la fougère 🌱', emoji: '✨', detail: 'Continue comme ça' },
-  { label: 'Chaque minute compte !', emoji: '⏱️', detail: 'Le temps, c’est de l’art' },
-  { label: 'Productivité 100% pur beurre', emoji: '🧈', detail: 'Tout en fluidité' },
-  { label: 'T’as prévu quoi de beau après ?', emoji: '🤔', detail: 'La journée avance vite' },
-  { label: 'Allez, encore un petit créneau !', emoji: '⚡', detail: 'L’objectif approche' },
-  { label: 'Je cligne des yeux mais je vois tout', emoji: '😉', detail: 'Mode observateur' },
-  { label: 'Tu veux une médaille ? 🥇', emoji: '🏆', detail: 'Bien méritée !' },
-  { label: 'Toujours là pour toi !', emoji: '🤍', detail: 'Ton compagnon Nothing OS' },
-  { label: 'Un esprit sain dans 24h bien calées', emoji: '🧘', detail: 'Équilibre parfait' },
+  { label: '100% cercle, 0% compromis', emoji: '⚪', detail: 'L’élégance du cercle dans son plus simple appareil.' },
+  { label: 'T’as pensé à t’hydrater ? 💧', emoji: '💧', detail: 'Ton corps n’a pas de batterie externe.' },
+  { label: 'Tu me regardes, je te regarde... 👀', emoji: '👀', detail: 'Premier qui cligne des yeux a perdu !' },
+  { label: 'Moins d’onglets ouverts, plus de paix 🧘', emoji: '✨', detail: 'Règle d’or du minimalisme.' },
+  { label: 'Chaque minute posée est un chef-d’œuvre', emoji: '⏱️', detail: 'Ta journée prend forme bloc par bloc.' },
+  { label: 'Tu gères la fougère aujourd’hui ! 🌱', emoji: '🌿', detail: 'Continue sur cette belle lancée.' },
+  { label: 'Productivité 100% pur beurre 🧈', emoji: '🧈', detail: 'Fluide, net, sans friction.' },
+  { label: 'Les points de ta journée s’alignent ⭐', emoji: '⚡', detail: 'Objectif clarté absolue.' },
+  { label: 'Rien n’est impossible, bloc par bloc.', emoji: '🤍', detail: 'Ton compagnon de poche veille au grain.' },
+  { label: 'Allez, encore un créneau et t’es le roi 👑', emoji: '🏆', detail: 'Un pas de plus vers ton sommet.' },
+  { label: 'Je cligne des yeux mais je vois tout 😉', emoji: '😉', detail: 'Mode observateur bienveillant actif.' },
+  { label: 'Un esprit sain dans 24h bien calées 🎯', emoji: '🎯', detail: 'Équilibre parfait entre focus et repos.' },
 ]
 
 export function useBloubState({
@@ -108,20 +110,19 @@ export function useBloubState({
     return Math.min(100, Math.max(10, Math.round((totalHours / 8) * 100)))
   }, [totalHours])
 
-  // Célébration lors de l'enregistrement d'une activité
+  // Célébration lors de l'enregistrement d'une activité (clin d'œil court de 3 secondes)
   const triggerCelebration = useCallback((title?: string) => {
     playSuccessChime()
     setOverride({
-      state: 'burst',
+      state: 'wink',
       label: title ? `Enregistré : ${title} !` : 'Activité enregistrée !',
-      emoji: '✨',
+      emoji: '😉',
       detail: 'Bien joué, créneau validé !',
-      isCosmic: true,
-      expiresAt: Date.now() + 3200,
+      expiresAt: Date.now() + 3000, // Exactement 3 secondes, puis retour à l'état normal
     })
   }, [])
 
-  // Clic sur Bloub : avec détection de spam (Easter egg tournis 😵)
+  // Clic sur Bloub : avec détection de spam (Easter egg tournis 😵) et punchlines
   const handleBotClick = useCallback(() => {
     const now = Date.now()
     tapHistoryRef.current = [...tapHistoryRef.current.filter((t) => now - t < 1500), now]
@@ -147,11 +148,35 @@ export function useBloubState({
       return
     }
 
-    // 2. Clic normal : son mignon gazouillis et réplique amusante
+    // 2. Clic normal : son mignon gazouillis et réplique contextuelle
     playBloubChirp()
-    const nextIndex = clickCount % WITTY_PUNCHLINES.length
+    let punchline: { label: string; emoji: string; detail?: string }
+
+    if (isPomodoroActive) {
+      if (isPomodoroBreak) {
+        punchline = {
+          label: 'Café chaud, cerveau tiède ☕',
+          emoji: '☕',
+          detail: 'Pause méritée, souffle un grand coup !',
+        }
+      } else {
+        punchline = {
+          label: 'Chut, je chronomètre ton génie 🤫',
+          emoji: '🧠',
+          detail: '0 distraction, 100% focus.',
+        }
+      }
+    } else if (totalHours >= 7) {
+      punchline = {
+        label: '7h+ aujourd’hui... Deal with it ! 🕶️',
+        emoji: '🕶️',
+        detail: 'T’as plié le game. Mission accomplie !',
+      }
+    } else {
+      const nextIndex = clickCount % WITTY_PUNCHLINES.length
+      punchline = WITTY_PUNCHLINES[nextIndex]
+    }
     setClickCount((prev) => prev + 1)
-    const punchline = WITTY_PUNCHLINES[nextIndex]
 
     const EXPRESSION_STATES: StateId[] = ['wink', 'wide', 'play', 'alert']
     const expression = EXPRESSION_STATES[clickCount % EXPRESSION_STATES.length]
@@ -161,9 +186,9 @@ export function useBloubState({
       label: punchline.label,
       emoji: punchline.emoji,
       detail: punchline.detail,
-      expiresAt: now + 3000,
+      expiresAt: now + 3500,
     })
-  }, [clickCount])
+  }, [clickCount, isPomodoroActive, isPomodoroBreak, totalHours])
 
   // Swipe tactile horizontal sur Bloub (Easter egg rotation à 360°)
   const handleBotSwipe = useCallback((_direction: 'left' | 'right') => {
@@ -220,7 +245,7 @@ export function useBloubState({
     if (!isToday) {
       if (totalHours >= 7) {
         return {
-          state: 'wink',
+          state: 'idle',
           label: `${totalHours}h validées !`,
           emoji: '⭐',
           detail: 'Masterclass de productivité',
@@ -263,6 +288,17 @@ export function useBloubState({
           emoji: '🌙',
           detail: currentEntry.title,
           isSleeping: true,
+          energyPercent,
+        }
+      }
+
+      // Activité musicale
+      if (/musique|music|album|écoute|spotify|deezer|morceau|vinyle|guitare|piano|podcast|chanson|playlist|concert|audio/i.test(currentEntry.title)) {
+        return {
+          state: 'idle',
+          label: `En écoute : ${currentEntry.title} 🎵`,
+          emoji: '🎵',
+          detail: `${currentEntry.startTime} - ${currentEntry.endTime}`,
           energyPercent,
         }
       }
@@ -333,16 +369,6 @@ export function useBloubState({
           emoji: '👀',
           detail: `Dernière activité finie à ${sortedByEnd[0].endTime}`,
           energyPercent: Math.max(20, energyPercent - 20),
-        }
-      }
-
-      if (nowMinute >= lastEndMin && nowMinute < lastEndMin + 20) {
-        return {
-          state: 'wink',
-          label: 'Session terminée, t’assures ! 👏',
-          emoji: '👏',
-          detail: 'Prêt pour la suite ?',
-          energyPercent,
         }
       }
     } else if (nowMinute >= 9 * 60 && nowMinute <= 19 * 60) {

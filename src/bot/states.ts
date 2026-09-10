@@ -162,20 +162,32 @@ export const STATES: StateDef[] = [
     id: 'wink',
     duration: 1.6,
     morph: 0.3,
-    blinkIn: true,
+    blinkIn: false,
     baseFace: false,
     baseBody: true,
-    pose: () =>
-      base({
-        gaze: { yaw: -5.37, pitch: 4.55, roll: 6.7 },
-        split: 16.25,
-        // L'oeil ferme n'est pas l'oeil ouvert ecrase : c'est un tiret
-        // horizontal PLUS LARGE que l'oeil ouvert (0.447 contre 0.236).
+    pose: (t) => {
+      // Clin d'œil dynamique : clin d'œil marqué sur les premières secondes, puis réouverture naturelle
+      const reopen = easings.easeOutCubic(clamp((t - 1.0) / 0.35))
+      const eyeClosedW = 0.447
+      const eyeClosedH = 0.089
+      const rightW = eyeClosedW + (EYE_W - eyeClosedW) * reopen
+      const rightH = eyeClosedH + (EYE_H - eyeClosedH) * reopen
+      const leftW = 0.236 + (EYE_W - 0.236) * reopen
+      const leftH = 0.464 + (EYE_H - 0.464) * reopen
+
+      return base({
+        gaze: {
+          yaw: -5.37 * (1 - reopen) + REST_GAZE.yaw * reopen,
+          pitch: 4.55 * (1 - reopen) + REST_GAZE.pitch * reopen,
+          roll: 6.7 * (1 - reopen)
+        },
+        split: 16.25 + (EYE_SPLIT - 16.25) * reopen,
         eyes: [
-          { w: 0.236, h: 0.464, open: 1 },
-          { w: 0.447, h: 0.089, open: 1 }
+          { w: leftW, h: leftH, open: 1 },
+          { w: rightW, h: rightH, open: 1 }
         ]
       })
+    }
   },
 
   {

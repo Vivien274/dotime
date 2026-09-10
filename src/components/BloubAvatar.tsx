@@ -18,7 +18,6 @@ interface BloubAvatarProps {
   isDizzy?: boolean
   isSleeping?: boolean
   isFocusing?: boolean
-  isCosmic?: boolean
   onClick?: () => void
   onSwipe?: (direction: 'left' | 'right') => void
   followCursor?: boolean
@@ -37,7 +36,6 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
   energyPercent = 50,
   isDizzy = false,
   isSleeping = false,
-  isFocusing = false,
   onClick,
   onSwipe,
   followCursor = false,
@@ -76,6 +74,21 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
       engineRef.current.setState(state, performance.now() / 1000)
       setShowRecentFeedback(true)
       const t = setTimeout(() => setShowRecentFeedback(false), 3200)
+
+      // Si c'est un clin d'œil, faire revenir le moteur à l'état de repos (idle) automatiquement
+      if (state === 'wink') {
+        const winkTimer = setTimeout(() => {
+          if (engineRef.current && currentStateRef.current === 'wink') {
+            currentStateRef.current = 'idle'
+            engineRef.current.setState('idle', performance.now() / 1000)
+          }
+        }, 1800)
+        return () => {
+          clearTimeout(t)
+          clearTimeout(winkTimer)
+        }
+      }
+
       return () => clearTimeout(t)
     }
   }, [state])
@@ -426,24 +439,7 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
             </g>
           )}
 
-          {/* Accessoire 2 : LED rouge Glyph clignotante en mode Focus / Pomodoro */}
-          {(isFocusing || state === 'thinking') && (
-            <g style={{ pointerEvents: 'none' }}>
-              <circle cx="85" cy="-80" r="10" fill="#d71921" opacity="0.3" className="animate-ping" />
-              <circle cx="85" cy="-80" r="5" fill="#d71921" />
-              <text
-                x="68"
-                y="-62"
-                fill="#d71921"
-                fontSize="9"
-                fontFamily="Space Mono, monospace"
-                fontWeight="bold"
-                letterSpacing="1"
-              >
-                ● REC
-              </text>
-            </g>
-          )}
+
 
           {/* Accessoire 3 : Étoiles d'étourdissement en cas de spam de taps */}
           {isDizzy && (
@@ -456,6 +452,10 @@ export const BloubAvatar: React.FC<BloubAvatarProps> = ({
               </text>
             </g>
           )}
+
+
+
+
 
           {/* Particules devant le corps */}
           {!frame.dotsBehind && (

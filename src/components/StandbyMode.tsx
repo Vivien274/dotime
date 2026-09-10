@@ -141,7 +141,6 @@ export const StandbyMode: React.FC<StandbyModeProps> = ({
             isDizzy={bloubMood?.isDizzy}
             isSleeping={bloubMood?.isSleeping}
             isFocusing={bloubMood?.isFocusing || (isPomoRunning && !isPomoBreak)}
-            isCosmic={bloubMood?.isCosmic}
             onClick={onBloubClick}
             onSwipe={onBloubSwipe}
             followCursor={false}

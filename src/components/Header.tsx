@@ -155,8 +155,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Droite : Bloub géant réactif Nothing OS (218px, +30%, 100% cercle, tactile & vivant) */}
-        <div className="shrink-0 flex items-center justify-center">
+        {/* Droite : Bloub géant réactif Nothing OS aligné à droite qui dépasse un peu de l'écran */}
+        <div className="shrink-0 flex items-center justify-end -mr-10 sm:-mr-14">
           <BloubAvatar
             state={bloubMood?.state ?? 'idle'}
             theme={theme}
@@ -168,7 +168,6 @@ export const Header: React.FC<HeaderProps> = ({
             isDizzy={bloubMood?.isDizzy}
             isSleeping={bloubMood?.isSleeping}
             isFocusing={bloubMood?.isFocusing}
-            isCosmic={bloubMood?.isCosmic}
             onClick={onBloubClick}
             onSwipe={onBloubSwipe}
             followCursor={false}
