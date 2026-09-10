@@ -234,33 +234,6 @@ export const getWeekDaysForDate = (dateKey: string): string[] => {
 }
 
 export const generateInitialEntries = (): Record<string, TimeEntry[]> => {
-  const today = getFormattedDateKey()
-  const entries: Record<string, TimeEntry[]> = {}
-
-  entries[today] = [
-    {
-      id: 'entry_1',
-      title: 'Petit déjeuner',
-      type: 'perso',
-      startTime: '08:00',
-      endTime: '09:00',
-      startHour: 8,
-      endHour: 9,
-      durationHours: 1,
-      date: today,
-    },
-    {
-      id: 'entry_2',
-      title: 'Modifications de Tablo',
-      type: 'entreprises',
-      startTime: '09:00',
-      endTime: '10:00',
-      startHour: 9,
-      endHour: 10,
-      durationHours: 1,
-      date: today,
-    },
-  ]
-
-  return entries
+  return {}
 }
+

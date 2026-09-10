@@ -7,7 +7,6 @@ import {
   PRELOADED_TOPICS,
   ACTIVITY_TYPES_META,
   getFormattedDateKey,
-  generateInitialEntries,
   timeStringToHours,
   getSmartRoundedEndTime,
   calculateDurationHours,
@@ -29,10 +28,57 @@ export type HourSlot = {
 }
 
 export function useTimeTracker() {
+  // Date en cours dans la vraie vie (horloge système)
+  const [liveToday, setLiveToday] = useState<string>(() => getFormattedDateKey())
+  const [currentHourNow, setCurrentHourNow] = useState<number>(() => new Date().getHours())
+
   // 1. Date sélectionnée (par défaut aujourd'hui)
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     return getFormattedDateKey()
   })
+
+  // Synchronisation automatique : passage de minuit, réveil de veille ou retour sur l'onglet
+  useEffect(() => {
+    const syncLiveDateAndHour = () => {
+      const actualToday = getFormattedDateKey()
+      const actualHour = new Date().getHours()
+
+      setCurrentHourNow(actualHour)
+
+      setLiveToday((prevLive) => {
+        if (prevLive !== actualToday) {
+          // Si l'utilisateur était en train de suivre la journée d'aujourd'hui, faire avancer vers le nouveau jour
+          setSelectedDate((currSelected) => {
+            if (currSelected === prevLive) {
+              return actualToday
+            }
+            return currSelected
+          })
+          return actualToday
+        }
+        return prevLive
+      })
+    }
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        syncLiveDateAndHour()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus)
+    window.addEventListener('focus', handleVisibilityOrFocus)
+
+    // Vérifier périodiquement toutes les 15 secondes
+    const interval = setInterval(syncLiveDateAndHour, 15_000)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus)
+      window.removeEventListener('focus', handleVisibilityOrFocus)
+      clearInterval(interval)
+    }
+  }, [])
+
 
   // Date suivante pour le calcul précis de la nuit
   const nextDateKey = useMemo(() => getOffsetDateKey(selectedDate, 1), [selectedDate])
@@ -101,27 +147,11 @@ export function useTimeTracker() {
           localStorage.setItem(STORAGE_KEY_MIGRATED, 'true')
         }
       } else {
-        // Initialiser avec les 2 entrées de démo initiales sur Convex si aucune donnée
-        const initial = generateInitialEntries()
-        const initialList = Object.entries(initial).flatMap(([dateKey, list]) =>
-          list.map((e) => ({
-            title: e.title,
-            type: e.type,
-            startTime: e.startTime,
-            endTime: e.endTime,
-            startHour: e.startHour,
-            endHour: e.endHour,
-            durationHours: e.durationHours,
-            date: dateKey,
-          }))
-        )
+        // Aucune donnée locale : marquer comme migré sans insérer de fausses entrées
+        localStorage.setItem(STORAGE_KEY_MIGRATED, 'true')
         hasMigrated.current = true
-        importBatchMutation({ entries: initialList })
-          .then(() => {
-            localStorage.setItem(STORAGE_KEY_MIGRATED, 'true')
-          })
-          .catch(console.error)
       }
+
     } catch (e) {
       console.error('Erreur migration vers Convex:', e)
     }
@@ -201,9 +231,7 @@ export function useTimeTracker() {
     return `${nextH.toString().padStart(2, '0')}:00`
   }, [suggestedStartTime])
 
-  // Matrice de 24 points (1 point par heure de la journée, de 00h à 23h)
-  const currentHourNow = new Date().getHours()
-  const isToday = selectedDate === getFormattedDateKey()
+  const isToday = selectedDate === liveToday
 
   const day24Hours = useMemo<HourSlot[]>(() => {
     return Array.from({ length: 24 }, (_, h) => {
