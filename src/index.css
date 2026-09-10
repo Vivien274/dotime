@@ -92,6 +92,88 @@
   animation: pulse-dot 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Animations organiques et fluides des blobs d'arrière-plan */
+@keyframes blob-drift-1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+  }
+  33% {
+    transform: translate3d(50px, -35px, 0) scale(1.1) rotate(110deg);
+    border-radius: 58% 42% 38% 62% / 38% 52% 48% 62%;
+  }
+  66% {
+    transform: translate3d(-35px, 45px, 0) scale(0.92) rotate(220deg);
+    border-radius: 35% 65% 55% 45% / 50% 65% 35% 50%;
+  }
+}
+
+@keyframes blob-drift-2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    border-radius: 55% 45% 35% 65% / 50% 50% 50% 50%;
+  }
+  33% {
+    transform: translate3d(-45px, 50px, 0) scale(1.12) rotate(-90deg);
+    border-radius: 35% 65% 60% 40% / 40% 60% 40% 60%;
+  }
+  66% {
+    transform: translate3d(40px, -30px, 0) scale(0.9) rotate(-190deg);
+    border-radius: 65% 35% 45% 55% / 50% 35% 65% 50%;
+  }
+}
+
+@keyframes blob-drift-3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    border-radius: 45% 55% 60% 40% / 50% 45% 55% 50%;
+  }
+  50% {
+    transform: translate3d(45px, 35px, 0) scale(1.15);
+    border-radius: 55% 45% 40% 60% / 40% 55% 45% 60%;
+  }
+}
+
+@keyframes blob-drift-4 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    border-radius: 60% 40% 50% 50% / 45% 55% 45% 55%;
+  }
+  50% {
+    transform: translate3d(-30px, -40px, 0) scale(1.08) rotate(140deg);
+    border-radius: 40% 60% 45% 55% / 55% 45% 55% 45%;
+  }
+}
+
+.animate-blob-1 {
+  animation: blob-drift-1 22s ease-in-out infinite;
+  will-change: transform, border-radius;
+}
+
+.animate-blob-2 {
+  animation: blob-drift-2 28s ease-in-out infinite;
+  will-change: transform, border-radius;
+}
+
+.animate-blob-3 {
+  animation: blob-drift-3 24s ease-in-out infinite;
+  will-change: transform, border-radius;
+}
+
+.animate-blob-4 {
+  animation: blob-drift-4 30s ease-in-out infinite;
+  will-change: transform, border-radius;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob-1,
+  .animate-blob-2,
+  .animate-blob-3,
+  .animate-blob-4 {
+    animation: none !important;
+  }
+}
+
 /* Masquer la scrollbar tout en conservant le scroll tactile fluide */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

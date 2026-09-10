@@ -12,6 +12,7 @@ import { QuickAddModal } from './components/QuickAddModal'
 import { StandbyMode } from './components/StandbyMode'
 import { BottomNav, type NavTab } from './components/BottomNav'
 import { PomodoroTimer } from './components/PomodoroTimer'
+import { BackgroundBlobs } from './components/BackgroundBlobs'
 import type { ActivityType } from './types'
 import confetti from 'canvas-confetti'
 import { Clock, Calendar, LayoutGrid, Plus } from 'lucide-react'
@@ -104,7 +105,7 @@ export function App() {
 
   return (
     <div
-      className={`min-h-screen w-full relative flex flex-col items-center justify-start py-4 px-3 sm:px-4 pb-24 ${
+      className={`min-h-screen w-full relative flex flex-col items-center justify-start py-4 px-3 sm:px-4 pb-24 overflow-x-hidden ${
         theme === 'dark' ? 'bg-dot-pattern-dark text-white' : 'bg-dot-pattern text-zinc-900'
       }`}
       style={{
@@ -115,8 +116,11 @@ export function App() {
         backgroundColor: theme === 'dark' ? '#0c0c0c' : '#FF9028',
       }}
     >
+      {/* Blobs colorés et animés dans les tonalités du fond */}
+      <BackgroundBlobs theme={theme} />
+
       {/* Conteneur Mobile First épuré */}
-      <main className="w-full max-w-md mx-auto flex flex-col space-y-4">
+      <main className="w-full max-w-md mx-auto flex flex-col space-y-4 relative z-10">
         {/* Header avec Grand numéro Dot-Matrix, boutons Veille, Thème et Refresh */}
         <Header
           selectedDate={selectedDate}
