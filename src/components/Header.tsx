@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Monitor, Sun, Moon, RefreshCw, Volume2, VolumeX } from 'lucide-react'
 import { getFormattedDateKey } from '../constants/initialData'
 import { isSoundEnabled, setSoundEnabled, playMechanicalClick } from '../utils/soundEffects'
+import { BloubAvatar } from './BloubAvatar'
+import type { BloubMood } from '../hooks/useBloubState'
 
 const SoundToggleButton: React.FC = () => {
   const [enabled, setEnabled] = useState(() => isSoundEnabled())
@@ -37,6 +39,8 @@ interface HeaderProps {
   onToggleTheme?: () => void
   onOpenExport?: () => void
   onRefresh?: () => void
+  bloubMood?: BloubMood
+  onBloubClick?: () => void
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -47,6 +51,8 @@ export const Header: React.FC<HeaderProps> = ({
   theme = 'light',
   onToggleTheme,
   onRefresh,
+  bloubMood,
+  onBloubClick,
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -163,8 +169,20 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Boutons de navigation temporelle */}
-        <div className="flex items-center">
+        {/* Droite : Avatar Bloub animé réactif & Boutons de navigation temporelle */}
+        <div className="flex flex-col items-end gap-2 pb-0.5">
+          {/* Tête Bloub réactive Nothing OS */}
+          <BloubAvatar
+            state={bloubMood?.state ?? 'idle'}
+            theme={theme}
+            size={56}
+            statusLabel={bloubMood?.label}
+            statusEmoji={bloubMood?.emoji}
+            statusDetail={bloubMood?.detail}
+            onClick={onBloubClick}
+          />
+
+          {/* Boutons de navigation temporelle */}
           <div className="flex items-center bg-white/25 backdrop-blur-md rounded-full p-1 border border-black/10 shadow-sm">
             <button
               onClick={handlePrevDay}

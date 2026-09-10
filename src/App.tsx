@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTimeTracker } from './hooks/useTimeTracker'
-import { usePomodoro } from './hooks/usePomodoro'
+import { usePomodoro, POMODORO_PRESETS } from './hooks/usePomodoro'
+import { useBloubState } from './hooks/useBloubState'
 import { Header } from './components/Header'
 import { Day24Matrix } from './components/Day24Matrix'
 import { TimeEntryForm } from './components/TimeEntryForm'
@@ -16,7 +17,6 @@ import { BackgroundBlobs } from './components/BackgroundBlobs'
 import type { ActivityType } from './types'
 import confetti from 'canvas-confetti'
 import { Clock, Calendar, LayoutGrid, Plus } from 'lucide-react'
-import { playSuccessChime } from './utils/soundEffects'
 
 export function App() {
   const [selectedHour, setSelectedHour] = useState<number | null>(null)
@@ -78,6 +78,23 @@ export function App() {
     setPrefilledRange(range)
   }
 
+  // Hook unifié du Pomodoro partagé entre la vue Pomodoro et le mode Standby
+  const pomodoro = usePomodoro((entry) => {
+    handleAddEntry(entry)
+    setNavTab('tracker')
+    setCurrentView('day')
+  })
+
+  // Humeur intelligente et dynamique de Bloub réagissant au fil de la journée
+  const isPomodoroBreak = POMODORO_PRESETS[pomodoro.mode]?.isBreak ?? false
+  const bloub = useBloubState({
+    entries: currentDayEntries,
+    totalHours: daySummaryStats.totalHours,
+    selectedDate,
+    isPomodoroActive: pomodoro.isRunning,
+    isPomodoroBreak,
+  })
+
   const handleAddEntry = (entryData: {
     title: string
     type: ActivityType
@@ -87,7 +104,7 @@ export function App() {
     addEntry(entryData)
     setSelectedHour(null)
     setPrefilledRange(null)
-    playSuccessChime()
+    bloub.triggerCelebration(entryData.title)
     confetti({
       particleCount: 35,
       spread: 50,
@@ -95,13 +112,6 @@ export function App() {
       colors: ['#181818', '#FFA43B', '#FFFFFF'],
     })
   }
-
-  // Hook unifié du Pomodoro partagé entre la vue Pomodoro et le mode Standby
-  const pomodoro = usePomodoro((entry) => {
-    handleAddEntry(entry)
-    setNavTab('tracker')
-    setCurrentView('day')
-  })
 
   return (
     <div
@@ -121,7 +131,7 @@ export function App() {
 
       {/* Conteneur Mobile First épuré */}
       <main className="w-full max-w-md mx-auto flex flex-col space-y-4 relative z-10">
-        {/* Header avec Grand numéro Dot-Matrix, boutons Veille, Thème et Refresh */}
+        {/* Header avec Grand numéro Dot-Matrix, Avatar Bloub réactif, boutons Veille, Thème et Refresh */}
         <Header
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
@@ -130,6 +140,8 @@ export function App() {
           theme={theme}
           onToggleTheme={handleToggleTheme}
           onRefresh={refreshToToday}
+          bloubMood={bloub.currentMood}
+          onBloubClick={bloub.handleBotClick}
         />
 
 
